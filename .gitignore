@@ -1,0 +1,50 @@
+# Dependências
+node_modules/
+.pnp
+.pnp.js
+
+# Build da Web (Vite / React)
+dist/
+dist-ssr/
+*.local
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Variáveis de Ambiente e Segredos
+.env
+.env.*
+!.env.example
+
+# IDEs e Sistema Operacional
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+.DS_Store
+Thumbs.db
+
+# Android Nativo / Capacitor
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/local.properties
+android/*.iml
+android/app/*.iml
+
+# Chaves e Certificados de Produção do Android (NUNCA SUBIR)
+*.keystore
+*.jks
+
+# Arquivos temporários de scrapers
+scripts/temp/
+*.tmp
