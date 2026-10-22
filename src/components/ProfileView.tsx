@@ -1,61 +1,78 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { User, LogOut, CheckCircle, Flame } from 'lucide-react';
+import { useI18n } from '../context/I18nContext';
+import { LogOut, Activity, UserCheck } from 'lucide-react';
 
-export const ProfileView: React.FC = () => {
+export const ProfileView = () => {
   const { user, login, logout } = useApp();
+  const { t } = useI18n();
   const [nameInput, setNameInput] = useState('');
 
   if (!user) {
     return (
-      <div className="max-w-sm mx-auto p-6 bg-slate-900 border border-slate-800 rounded-2xl space-y-4">
-        <h2 className="text-xl font-bold text-slate-100">Criar Perfil / Entrar</h2>
+      <div className="max-w-sm mx-auto p-6 bg-zinc-900 border border-zinc-800 rounded-xl space-y-4 font-mono">
+        <div className="flex items-center gap-2 text-zinc-100">
+          <UserCheck className="w-5 h-5 text-emerald-500" />
+          <h2 className="text-sm font-bold uppercase tracking-wider">{t.profileView.guestTitle}</h2>
+        </div>
         <input
           type="text"
-          placeholder="Seu Nickname de Dev"
+          placeholder={t.profileView.inputPlaceholder}
           value={nameInput}
           onChange={(e) => setNameInput(e.target.value)}
-          className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-sm text-slate-200 outline-none focus:border-emerald-500"
+          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-200 outline-none focus:border-zinc-700"
         />
         <button
-          onClick={() => nameInput && login(nameInput, 'user@dev.cc')}
-          className="w-full bg-emerald-500 text-black font-extrabold py-3 rounded-xl hover:bg-emerald-400"
+          onClick={() => nameInput && login(nameInput, `${nameInput.toLowerCase()}@anamnese.local`)}
+          className="w-full bg-zinc-100 text-zinc-950 font-bold py-2.5 rounded-lg hover:bg-zinc-200 text-xs transition-colors"
         >
-          Entrar e Salvar Progresso
+          {t.profileView.loginBtn}
         </button>
       </div>
     );
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-4">
-      <div className="p-6 bg-slate-900 border border-slate-800 rounded-2xl flex items-center gap-4">
-        <img src={user.avatar} alt={user.name} className="w-16 h-16 rounded-2xl bg-slate-800 border-2 border-emerald-500/40" />
+    <div className="max-w-md mx-auto space-y-4 font-mono">
+      <div className="p-5 bg-zinc-900/60 border border-zinc-800 rounded-xl flex items-center gap-4">
+        <img
+          src={user.avatar}
+          alt={user.name}
+          className="w-14 h-14 rounded-lg bg-zinc-800 border border-zinc-700 object-cover"
+        />
         <div>
-          <h2 className="text-lg font-bold text-slate-100">{user.name}</h2>
-          <span className="text-xs text-emerald-400 font-semibold">Dev Nível {user.level}</span>
-          <div className="flex items-center gap-1 mt-1 text-xs text-orange-400 font-bold">
-            <Flame className="w-4 h-4 fill-orange-400" /> {user.streak} dias de sequência
+          <h2 className="text-sm font-bold text-zinc-100">{user.name}</h2>
+          <span className="text-xs text-emerald-500 font-semibold block mt-0.5">
+            {t.level} {user.level}
+          </span>
+          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-400">
+            <Activity className="w-3.5 h-3.5 text-emerald-500" />
+            <span>{user.streak} {t.streak}</span>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl text-center">
-          <span className="text-xs text-slate-500 uppercase font-bold">Total XP</span>
-          <div className="text-2xl font-black text-emerald-400 mt-1">{user.xp}</div>
+      <div className="grid grid-cols-2 gap-3 text-center">
+        <div className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-xl">
+          <span className="text-[10px] text-zinc-500 uppercase font-semibold block">
+            {t.profileView.statsTotalXp}
+          </span>
+          <div className="text-xl font-bold text-zinc-100 mt-1">{user.xp}</div>
         </div>
-        <div className="bg-slate-900/60 border border-slate-800 p-4 rounded-xl text-center">
-          <span className="text-xs text-slate-500 uppercase font-bold">Resoluções</span>
-          <div className="text-2xl font-black text-cyan-400 mt-1">{(user.xp / 50).toFixed(0)}</div>
+        <div className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-xl">
+          <span className="text-[10px] text-zinc-500 uppercase font-semibold block">
+            {t.profileView.statsResolutions}
+          </span>
+          <div className="text-xl font-bold text-zinc-100 mt-1">{(user.xp / 50).toFixed(0)}</div>
         </div>
       </div>
 
       <button
         onClick={logout}
-        className="w-full flex items-center justify-center gap-2 p-3 text-rose-400 border border-rose-500/30 rounded-xl bg-rose-950/20 hover:bg-rose-900/30 text-sm font-bold"
+        className="w-full flex items-center justify-center gap-2 p-2.5 text-red-400 border border-red-950 rounded-lg bg-red-950/20 hover:bg-red-950/40 text-xs font-semibold transition-colors"
       >
-        <LogOut className="w-4 h-4" /> Sair da Conta
+        <LogOut className="w-3.5 h-3.5" />
+        <span>{t.profileView.logoutBtn}</span>
       </button>
     </div>
   );

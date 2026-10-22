@@ -1,0 +1,36 @@
+[
+  {
+    "id": "poscomp_01",
+    "category": "algoritmos",
+    "question": "Qual o limite inferior assintotico (Omega) para ordenacao baseada em comparacoes no pior caso?",
+    "options": ["Omega(n)", "Omega(n log n)", "Omega(n^2)", "Omega(log n)"],
+    "correctIndex": 1,
+    "explanation": "Pela arvore de decisao, qualquer algoritmo estritamente baseado em comparacoes requer no minimo Omega(n log n) operacoes no pior caso."
+  },
+  {
+    "id": "poscomp_02",
+    "category": "so",
+    "question": "No algoritmo do Banqueiro de Dijkstra, o estado e considerado seguro se:",
+    "options": [
+      "Nao existe nenhum processo bloqueado no momento.",
+      "Existe pelo menos uma sequencia de alocacao que permite a todos os processos terminarem sem deadlock.",
+      "A CPU esta com 100% de utilizacao sem preempcao.",
+      "A paginacao sob demanda nao possui dirty pages."
+    ],
+    "correctIndex": 1,
+    "explanation": "O estado e considerado seguro se o sistema puder garantir a conclusao de todos os processos sem interrupcao permanente por dependencia circular."
+  },
+  {
+    "id": "poscomp_03",
+    "category": "ia",
+    "question": "O mecanismo de Self-Attention na arquitetura Transformer tem complexidade computacional quadratica em relacao a:",
+    "options": [
+      "Ao comprimento da sequencia de entrada (tokens).",
+      "Ao numero de parametros estaticos dos pesos.",
+      "A taxa de aprendizado (learning rate).",
+      "Ao tamanho do batch de inferencia."
+    ],
+    "correctIndex": 0,
+    "explanation": "O produto matricial QK^T calcula a relacao entre cada token e todos os demais, gerando custo O(n^2) em relacao ao tamanho da sequencia."
+  }
+]

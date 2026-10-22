@@ -1,41 +1,57 @@
 import React from 'react';
 import { useApp } from '../context/AppContext';
-import { Flame, Trophy, Palette, Terminal } from 'lucide-react';
+import { useI18n } from '../context/I18nContext';
+import { Activity, Globe, Shield, Terminal } from 'lucide-react';
+import { Language } from '../i18n/translations';
 
-export const Header: React.FC<{ activeTab: string; setActiveTab: (t: any) => void }> = ({ activeTab, setActiveTab }) => {
-  const { user, theme, setTheme } = useApp();
+export const Header: React.FC<{ activeTab: string; setActiveTab: (t: any) => void }> = ({ setActiveTab }) => {
+  const { user } = useApp();
+  const { language, setLanguage, t } = useI18n();
 
-  const cycleTheme = () => {
-    if (theme === 'cyber') setTheme('dark');
-    else if (theme === 'dark') setTheme('light');
-    else setTheme('cyber');
+  const handleLangCycle = () => {
+    const sequence: Language[] = ['pt', 'en', 'es'];
+    const nextIdx = (sequence.indexOf(language) + 1) % sequence.length;
+    setLanguage(sequence[nextIdx]);
   };
 
   return (
-    <header className="sticky top-0 z-50 backdrop-blur-md border-b border-emerald-500/20 bg-black/40 px-4 py-3 flex items-center justify-between">
+    <header className="sticky top-0 z-50 backdrop-blur-md border-b border-zinc-800 bg-zinc-950/80 px-4 py-3 flex items-center justify-between">
       <div className="flex items-center gap-2 cursor-pointer" onClick={() => setActiveTab('quiz')}>
-        <Terminal className="w-6 h-6 text-emerald-400" />
-        <span className="font-extrabold tracking-wider bg-clip-text text-transparent bg-gradient-to-r from-emerald-400 to-cyan-500">
-          DEVQUIZ<span className="text-pink-500">.CC</span>
-        </span>
+        <div className="p-1.5 rounded-lg bg-zinc-900 border border-zinc-800">
+          <Terminal className="w-4 h-4 text-zinc-100" />
+        </div>
+        <div>
+          <span className="font-mono text-sm tracking-widest font-black text-zinc-100">
+            {t.appName}
+          </span>
+          <span className="text-[10px] block font-mono text-zinc-500 uppercase tracking-tighter">
+            Core Engine v1.0
+          </span>
+        </div>
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {user && (
-          <div className="flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 rounded-full px-3 py-1 text-xs">
-            <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
-            <span className="font-bold text-orange-400">{user.streak}d</span>
-            <span className="text-slate-500">|</span>
-            <Trophy className="w-3.5 h-3.5 text-yellow-400" />
-            <span className="font-semibold text-yellow-400">{user.xp} XP</span>
+          <div className="flex items-center gap-3 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-1 text-xs font-mono">
+            <span className="flex items-center gap-1 text-zinc-400">
+              <Activity className="w-3.5 h-3.5 text-emerald-500" />
+              <span>{user.streak}d</span>
+            </span>
+            <span className="text-zinc-700">|</span>
+            <span className="flex items-center gap-1 text-zinc-200">
+              <Shield className="w-3.5 h-3.5 text-zinc-400" />
+              <span>{user.xp} XP</span>
+            </span>
           </div>
         )}
 
-        <button 
-          onClick={cycleTheme}
-          title="Alternar Tema (Cyber / Dark / Light)" 
-          className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/50 hover:bg-slate-700/50 text-slate-300">
-          <Palette className="w-4 h-4" />
+        <button
+          onClick={handleLangCycle}
+          title="Alterar Idioma"
+          className="flex items-center gap-1 text-xs font-mono px-2 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 hover:border-zinc-700 transition-colors uppercase"
+        >
+          <Globe className="w-3.5 h-3.5 text-zinc-400" />
+          <span>{language}</span>
         </button>
       </div>
     </header>
