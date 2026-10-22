@@ -1,0 +1,8 @@
+{
+  "appId": "com.devquiz.cc",
+  "appName": "DevQuiz CC",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https"
+  }
+}
