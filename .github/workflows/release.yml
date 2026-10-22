@@ -9,9 +9,11 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Generate Tag, Build & Publish Release
+  build-web-and-android:
+    name: Build Web & Android
     runs-on: ubuntu-latest
+    outputs:
+      tag: ${{ steps.tag_version.outputs.new_tag }}
 
     steps:
       - name: Checkout Code
@@ -43,7 +45,7 @@ jobs:
       - name: Install Dependencies
         run: npm ci
 
-      - name: Compile Production Web Build
+      - name: Compile Web Application
         run: npm run build
 
       - name: Package Web Distribution
@@ -64,16 +66,73 @@ jobs:
           cp app/build/outputs/apk/debug/app-debug.apk ../anamnese-android-${{ steps.tag_version.outputs.new_tag }}.apk
           cd ..
 
+      - name: Upload Web and APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: web-and-android
+          path: |
+            anamnese-web-*.zip
+            anamnese-android-*.apk
+
+  build-windows:
+    name: Build Windows Executable
+    needs: build-web-and-android
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js Environment
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Compile Windows Executable (.exe)
+        run: npm run electron:build
+
+      - name: Rename Output Executable
+        shell: bash
+        run: |
+          mv dist-electron/*.exe anamnese-windows-${{ needs.build-web-and-android.outputs.tag }}.exe
+
+      - name: Upload Windows Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-exe
+          path: anamnese-windows-*.exe
+
+  publish-release:
+    name: Publish Consolidated Release
+    needs: [build-web-and-android, build-windows]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Download Web and Android Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: web-and-android
+
+      - name: Download Windows Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-exe
+
       - name: Publish GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
-          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          tag_name: ${{ needs.build-web-and-android.outputs.tag }}
+          name: Release ${{ needs.build-web-and-android.outputs.tag }}
           generate_release_notes: true
           draft: false
           prerelease: false
           files: |
-            anamnese-web-${{ steps.tag_version.outputs.new_tag }}.zip
-            anamnese-android-${{ steps.tag_version.outputs.new_tag }}.apk
+            anamnese-web-*.zip
+            anamnese-android-*.apk
+            anamnese-windows-*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
