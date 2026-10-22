@@ -4,12 +4,12 @@
   "version": "1.0.0",
   "type": "module",
   "main": "electron/main.cjs",
-  "scripts": {
+"scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "crawl": "node scripts/crawler.js",
-    "electron:dev": "vite",
+    "desktop": "vite build && electron .",
     "electron:build": "vite build && electron-builder --win portable"
   },
   "build": {
@@ -32,6 +32,7 @@
     "@capacitor/core": "^6.0.0",
     "canvas-confetti": "^1.9.2",
     "clsx": "^2.1.0",
+    "electron-updater": "^6.8.9",
     "lucide-react": "^0.359.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
