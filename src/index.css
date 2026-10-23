@@ -2,8 +2,61 @@
 @tailwind components;
 @tailwind utilities;
 
+:root, [data-theme="anamnese"] {
+  --app-bg: #06080d;
+  --sidebar-bg: #0a0d14;
+  --surface-bg: #0f1420;
+  --elevated-bg: #141b2b;
+  --border-ui: #1a2337;
+  --border-focus: rgba(6, 182, 212, 0.4);
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  --accent: #06b6d4;
+  --accent-light: #22d3ee;
+  --accent-bg: rgba(6, 182, 212, 0.1);
+  --status-ok: #10b981;
+  --status-err: #ef4444;
+}
+
+[data-theme="matrix"] {
+  --app-bg: #020a05;
+  --sidebar-bg: #041209;
+  --surface-bg: #061c0e;
+  --elevated-bg: #0a2d17;
+  --border-ui: #0f3d20;
+  --border-focus: rgba(34, 197, 94, 0.4);
+  --text-primary: #f0fdf4;
+  --text-secondary: #86efac;
+  --text-muted: #166534;
+  --accent: #22c55e;
+  --accent-light: #4ade80;
+  --accent-bg: rgba(34, 197, 94, 0.1);
+  --status-ok: #22c55e;
+  --status-err: #ef4444;
+}
+
+[data-theme="cyber"] {
+  --app-bg: #0d0817;
+  --sidebar-bg: #130d24;
+  --surface-bg: #1b1233;
+  --elevated-bg: #261947;
+  --border-ui: #382566;
+  --border-focus: rgba(217, 70, 239, 0.4);
+  --text-primary: #faf5ff;
+  --text-secondary: #d8b4fe;
+  --text-muted: #7e22ce;
+  --accent: #d946ef;
+  --accent-light: #e879f9;
+  --accent-bg: rgba(217, 70, 239, 0.1);
+  --status-ok: #10b981;
+  --status-err: #f43f5e;
+}
+
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  background-color: var(--app-bg);
+  color: var(--text-primary);
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   overflow-x: hidden;
 }

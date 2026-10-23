@@ -56,38 +56,38 @@ function MainApp() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#06080d] text-slate-100 flex flex-col md:flex-row selection:bg-cyan-950 selection:text-cyan-200">
+    <div className="min-h-screen bg-[var(--app-bg)] text-[var(--text-primary)] flex flex-col md:flex-row transition-colors duration-200">
       {showUpdateModal && availableRelease && (
         <UpdateModal release={availableRelease} onDismiss={() => setShowUpdateModal(false)} />
       )}
 
-      {/* Sidebar Desktop Clinica/Diagnostica */}
-      <aside className="hidden md:flex flex-col w-64 border-r border-[#1a2337] bg-[#0a0d14] p-4 shrink-0 font-mono">
+      {/* Sidebar Desktop */}
+      <aside className="hidden md:flex flex-col w-64 border-r border-[var(--border-ui)] bg-[var(--sidebar-bg)] p-4 shrink-0 font-mono">
         <div className="flex items-center gap-2.5 mb-6 px-2">
-          <div className="p-2 rounded-lg bg-[#0f1420] border border-[#1a2337]">
-            <Stethoscope className="w-5 h-5 text-cyan-400" />
+          <div className="p-2 rounded-lg bg-[var(--surface-bg)] border border-[var(--border-ui)]">
+            <Stethoscope className="w-5 h-5 text-[var(--accent)]" />
           </div>
           <div>
-            <span className="text-sm tracking-widest font-black text-slate-100 block">{t.appName}</span>
-            <span className="text-[10px] text-cyan-500 uppercase tracking-tight">Telemetria Clinica v1.0</span>
+            <span className="text-sm tracking-widest font-black text-[var(--text-primary)] block">{t.appName}</span>
+            <span className="text-[10px] text-[var(--accent)] uppercase tracking-tight">Telemetria Clinica v1.0</span>
           </div>
         </div>
 
         {user && (
-          <div className="bg-[#0f1420]/80 border border-[#1a2337] rounded-xl p-3 mb-6 text-xs space-y-2">
+          <div className="bg-[var(--surface-bg)] border border-[var(--border-ui)] rounded-xl p-3 mb-6 text-xs space-y-2">
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Operador:</span>
-              <span className="text-slate-200 font-bold">{user.name}</span>
+              <span className="text-[var(--text-muted)]">Operador:</span>
+              <span className="text-[var(--text-primary)] font-bold">{user.name}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-slate-500">Triagem:</span>
-              <span className="text-cyan-400 font-bold">Nivel {user.level}</span>
+              <span className="text-[var(--text-muted)]">Triagem:</span>
+              <span className="text-[var(--accent)] font-bold">Nivel {user.level}</span>
             </div>
-            <div className="flex items-center justify-between pt-1 border-t border-[#1a2337]">
-              <span className="flex items-center gap-1 text-slate-400">
-                <Shield className="w-3.5 h-3.5 text-cyan-500" /> Score:
+            <div className="flex items-center justify-between pt-1 border-t border-[var(--border-ui)]">
+              <span className="flex items-center gap-1 text-[var(--text-secondary)]">
+                <Shield className="w-3.5 h-3.5 text-[var(--accent)]" /> Score:
               </span>
-              <span className="text-slate-100 font-bold">{user.xp} XP</span>
+              <span className="text-[var(--text-primary)] font-bold">{user.xp} XP</span>
             </div>
           </div>
         )}
@@ -97,72 +97,72 @@ function MainApp() {
             onClick={() => setActiveTab('quiz')}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
               activeTab === 'quiz'
-                ? 'bg-[#141b2b] text-cyan-300 font-bold border border-cyan-500/30'
-                : 'text-slate-400 hover:bg-[#0f1420] hover:text-slate-200'
+                ? 'bg-[var(--elevated-bg)] text-[var(--accent)] font-bold border border-[var(--border-focus)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-bg)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <Binary className="w-4 h-4 text-cyan-400" />
+            <Binary className="w-4 h-4 text-[var(--accent)]" />
             <span>{t.modules}</span>
           </button>
           <button
             onClick={() => { setSelectedCategory(null); setActiveTab('infinite'); }}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
               activeTab === 'infinite'
-                ? 'bg-[#141b2b] text-cyan-300 font-bold border border-cyan-500/30'
-                : 'text-slate-400 hover:bg-[#0f1420] hover:text-slate-200'
+                ? 'bg-[var(--elevated-bg)] text-[var(--accent)] font-bold border border-[var(--border-focus)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-bg)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <Activity className="w-4 h-4 text-cyan-400" />
+            <Activity className="w-4 h-4 text-[var(--accent)]" />
             <span>Diagnostico Continuo</span>
           </button>
           <button
             onClick={() => setActiveTab('news')}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
               activeTab === 'news'
-                ? 'bg-[#141b2b] text-cyan-300 font-bold border border-cyan-500/30'
-                : 'text-slate-400 hover:bg-[#0f1420] hover:text-slate-200'
+                ? 'bg-[var(--elevated-bg)] text-[var(--accent)] font-bold border border-[var(--border-focus)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-bg)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <BrainCircuit className="w-4 h-4 text-cyan-400" />
+            <BrainCircuit className="w-4 h-4 text-[var(--accent)]" />
             <span>{t.news}</span>
           </button>
           <button
             onClick={() => setActiveTab('rank')}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
               activeTab === 'rank'
-                ? 'bg-[#141b2b] text-cyan-300 font-bold border border-cyan-500/30'
-                : 'text-slate-400 hover:bg-[#0f1420] hover:text-slate-200'
+                ? 'bg-[var(--elevated-bg)] text-[var(--accent)] font-bold border border-[var(--border-focus)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-bg)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <Shield className="w-4 h-4 text-cyan-400" />
+            <Shield className="w-4 h-4 text-[var(--accent)]" />
             <span>{t.ranking}</span>
           </button>
           <button
             onClick={() => setActiveTab('profile')}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
               activeTab === 'profile'
-                ? 'bg-[#141b2b] text-cyan-300 font-bold border border-cyan-500/30'
-                : 'text-slate-400 hover:bg-[#0f1420] hover:text-slate-200'
+                ? 'bg-[var(--elevated-bg)] text-[var(--accent)] font-bold border border-[var(--border-focus)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-bg)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <Terminal className="w-4 h-4 text-cyan-400" />
+            <Terminal className="w-4 h-4 text-[var(--accent)]" />
             <span>{t.profile}</span>
           </button>
           <button
             onClick={() => setActiveTab('settings')}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors ${
               activeTab === 'settings'
-                ? 'bg-[#141b2b] text-cyan-300 font-bold border border-cyan-500/30'
-                : 'text-slate-400 hover:bg-[#0f1420] hover:text-slate-200'
+                ? 'bg-[var(--elevated-bg)] text-[var(--accent)] font-bold border border-[var(--border-focus)]'
+                : 'text-[var(--text-secondary)] hover:bg-[var(--surface-bg)] hover:text-[var(--text-primary)]'
             }`}
           >
-            <Settings className="w-4 h-4 text-cyan-400" />
+            <Settings className="w-4 h-4 text-[var(--accent)]" />
             <span>Configuracoes</span>
           </button>
         </nav>
       </aside>
 
-      {/* Conteudo Central */}
+      {/* Painel Central */}
       <div className="flex-1 flex flex-col min-h-screen">
         <Header
           activeTab={activeTab}
@@ -174,23 +174,23 @@ function MainApp() {
         <main className="flex-1 p-4 md:p-8 max-w-5xl w-full mx-auto pb-24 md:pb-8">
           {activeTab === 'quiz' && (
             <div className="space-y-6 font-mono">
-              <div className="flex items-center justify-between border-b border-[#1a2337] pb-3">
+              <div className="flex items-center justify-between border-b border-[var(--border-ui)] pb-3">
                 <div>
-                  <h2 className="text-sm md:text-base font-bold uppercase tracking-wider text-slate-100 flex items-center gap-2">
-                    <Stethoscope className="w-4 h-4 text-cyan-400" />
+                  <h2 className="text-sm md:text-base font-bold uppercase tracking-wider text-[var(--text-primary)] flex items-center gap-2">
+                    <Stethoscope className="w-4 h-4 text-[var(--accent)]" />
                     <span>Setores de Triagem Diagnostica</span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-[var(--text-muted)] mt-0.5">
                     Avaliacao estrutural por subsistemas de computacao e redes neurais.
                   </p>
                 </div>
                 <button
                   onClick={handleRunCrawler}
                   disabled={isScraping}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#0f1420] border border-[#1a2337] hover:border-cyan-500/40 text-xs text-slate-300 transition-colors disabled:opacity-50"
-                  title="Ingestar questoes de endpoints abertos"
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[var(--surface-bg)] border border-[var(--border-ui)] hover:border-[var(--border-focus)] text-xs text-[var(--text-secondary)] transition-colors disabled:opacity-50"
+                  title="Ingestar novas questoes de endpoints abertos"
                 >
-                  <DownloadCloud className={`w-3.5 h-3.5 ${isScraping ? 'animate-bounce text-cyan-400' : 'text-slate-400'}`} />
+                  <DownloadCloud className={`w-3.5 h-3.5 ${isScraping ? 'animate-bounce text-[var(--accent)]' : ''}`} />
                   <span>{isScraping ? 'Ingestando...' : 'Coletar Questoes'}</span>
                 </button>
               </div>
@@ -202,16 +202,16 @@ function MainApp() {
                     <button
                       key={track.id}
                       onClick={() => handleOpenModule(track.id)}
-                      className="p-4 rounded-xl bg-[#0a0d14]/90 border border-[#1a2337] hover:border-cyan-500/40 hover:bg-[#0f1420] text-left transition-all flex items-start gap-3.5 group"
+                      className="p-4 rounded-xl bg-[var(--surface-bg)] border border-[var(--border-ui)] hover:border-[var(--border-focus)] text-left transition-all flex items-start gap-3.5 group shadow-sm"
                     >
-                      <div className="p-2.5 rounded-lg bg-[#0f1420] border border-[#1a2337] group-hover:border-cyan-500/40 shrink-0">
-                        <Icon className="w-4 h-4 text-cyan-400" />
+                      <div className="p-2.5 rounded-lg bg-[var(--elevated-bg)] border border-[var(--border-ui)] group-hover:border-[var(--border-focus)] shrink-0">
+                        <Icon className="w-4 h-4 text-[var(--accent)]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-xs text-slate-200 leading-snug truncate">
+                        <h3 className="font-semibold text-xs text-[var(--text-primary)] leading-snug truncate">
                           {track.label}
                         </h3>
-                        <span className="text-[10px] text-slate-500 block mt-1">
+                        <span className="text-[10px] text-[var(--text-muted)] block mt-1 font-bold">
                           {track.count} itens calibrados
                         </span>
                       </div>
