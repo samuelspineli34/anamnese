@@ -44,6 +44,7 @@ function MainApp() {
   const { user } = useApp();
 
   useEffect(() => {
+    // 1. Busca automatica de atualizacao ao abrir o aplicativo (Mobile e Desktop)
     checkLatestRelease().then((res) => {
       if (res.hasUpdate && res.release) {
         setAvailableRelease(res.release);
@@ -51,6 +52,7 @@ function MainApp() {
       }
     });
 
+    // 2. Sincronizacao periodica do contador de questoes
     const timer = setInterval(() => {
       setCounts(questionEngine.getCountsByCategory());
     }, 3000);
@@ -194,7 +196,7 @@ function MainApp() {
         </nav>
       </aside>
 
-      {/* Conteudo Principal */}
+      {/* Conteudo Central */}
       <div className="flex-1 flex flex-col min-h-screen">
         <Header
           activeTab={activeTab}
@@ -215,6 +217,7 @@ function MainApp() {
                 </p>
               </div>
 
+              {/* Grade de 12 Trilhas Curriculares */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {tracks.map((track) => {
                   const Icon = track.icon;

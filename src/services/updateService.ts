@@ -4,63 +4,118 @@ export interface ReleaseInfo {
   body: string;
   publishedAt: string;
   downloadUrl: string;
+  platform: 'windows' | 'android' | 'web';
+  fileName: string;
 }
 
-const GITHUB_REPO = 'samuelspineli34/anamnese';
-export const CURRENT_VERSION = '1.0.0';
+declare const __APP_VERSION__: string;
 
-export async function checkLatestRelease(): Promise<{ hasUpdate: boolean; release?: ReleaseInfo }> {
+const GITHUB_REPO = 'samuelspineli34/anamnese';
+
+export function getLocalAppVersion(): string {
+  if (typeof __APP_VERSION__ !== 'undefined') {
+    return __APP_VERSION__;
+  }
+  return '1.0.0';
+}
+
+export function detectCurrentPlatform(): 'windows' | 'android' | 'web' {
+  const userAgent = (navigator.userAgent || '').toLowerCase();
+  if (userAgent.includes('android')) return 'android';
+  if (userAgent.includes('windows') || userAgent.includes('electron')) return 'windows';
+  return 'web';
+}
+
+export async function checkLatestRelease(): Promise<{ hasUpdate: boolean; release?: ReleaseInfo; currentVersion: string }> {
+  const currentVersion = getLocalAppVersion();
+
   try {
     const res = await fetch(`https://api.github.com/repos/${GITHUB_REPO}/releases/latest`, {
       headers: { Accept: 'application/vnd.github.v3+json' },
     });
 
     if (!res.ok) {
-      return { hasUpdate: false };
+      return { hasUpdate: false, currentVersion };
     }
 
     const data = await res.json();
     const latestTag = (data.tag_name || '').replace(/^v/, '');
 
-    if (isNewerVersion(latestTag, CURRENT_VERSION)) {
-      // Identifica o binário adequado dependendo da plataforma
-      const isWindows = navigator.userAgent.toLowerCase().includes('windows');
-      const isAndroid = navigator.userAgent.toLowerCase().includes('android');
+    if (isNewerVersion(latestTag, currentVersion)) {
+      const platform = detectCurrentPlatform();
+      let downloadUrl = data.html_url;
+      let fileName = 'Nova Versao';
 
-      let downloadAsset = data.html_url;
-      if (Array.isArray(data.assets)) {
-        if (isWindows) {
+      if (Array.isArray(data.assets) && data.assets.length > 0) {
+        if (platform === 'windows') {
           const exeAsset = data.assets.find((a: any) => a.name.endsWith('.exe'));
-          if (exeAsset) downloadAsset = exeAsset.browser_download_url;
-        } else if (isAndroid) {
+          if (exeAsset) {
+            downloadUrl = exeAsset.browser_download_url;
+            fileName = exeAsset.name;
+          }
+        } else if (platform === 'android') {
           const apkAsset = data.assets.find((a: any) => a.name.endsWith('.apk'));
-          if (apkAsset) downloadAsset = apkAsset.browser_download_url;
+          if (apkAsset) {
+            downloadUrl = apkAsset.browser_download_url;
+            fileName = apkAsset.name;
+          }
         }
       }
 
       return {
         hasUpdate: true,
+        currentVersion,
         release: {
           version: data.tag_name,
           name: data.name || data.tag_name,
-          body: data.body || 'Aprimoramentos técnicos e correções de segurança.',
-          publishedAt: data.published_at,
-          downloadUrl: downloadAsset,
+          body: data.body || 'Melhorias de desempenho e atualizacoes no acervo de questoes.',
+          publishedAt: new Date(data.published_at).toLocaleDateString('pt-BR'),
+          downloadUrl,
+          platform,
+          fileName,
         },
       };
     }
 
-    return { hasUpdate: false };
+    return { hasUpdate: false, currentVersion };
   } catch (err) {
-    console.warn('Falha na verificação de release:', err);
-    return { hasUpdate: false };
+    return { hasUpdate: false, currentVersion };
   }
 }
 
+// Executa o download/atualizacao conforme a plataforma
+export function executePlatformUpdate(downloadUrl: string): void {
+  // 1. Se estiver rodando no Electron (Windows Desktop)
+  if (typeof window !== 'undefined' && (window as any).require) {
+    try {
+      const { ipcRenderer, shell } = (window as any).require('electron');
+      if (shell && shell.openExternal) {
+        shell.openExternal(downloadUrl);
+        return;
+      }
+      ipcRenderer.send('open-external-url', downloadUrl);
+      return;
+    } catch {
+      // Fallback para navegador
+    }
+  }
+
+  // 2. Se for Android nativo ou PWA/Web
+  // Utiliza _system para acionar o DownloadManager do Android nativamente
+  const link = document.createElement('a');
+  link.href = downloadUrl;
+  link.target = '_blank';
+  link.rel = 'noopener noreferrer';
+  link.setAttribute('download', '');
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
 function isNewerVersion(latest: string, current: string): boolean {
-  const parse = (v: string) => v.split('.').map(n => parseInt(n, 10) || 0);
-  const [lMaj, lMin, lPat] = parse(latest);
-  const [cMaj, cMin, cPat] = parse(current);
+  const parse = (v: string) => v.split('.').map((n) => parseInt(n, 10) || 0);
+  const [lMaj = 0, lMin = 0, lPat = 0] = parse(latest);
+  const [cMaj = 0, cMin = 0, cPat = 0] = parse(current);
 
   if (lMaj > cMaj) return true;
   if (lMaj === cMaj && lMin > cMin) return true;
