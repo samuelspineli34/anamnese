@@ -1,6 +1,7 @@
 import { Question, Category } from '../types';
 import { scrapeOnlineQuestions } from './crawlerService';
 import { ProceduralGenerator } from './proceduralGenerator';
+import { AIQuestionService } from './aiQuestionService';
 
 const STORAGE_KEY = 'anamnese_questions_repo_v3';
 
@@ -74,9 +75,30 @@ class QuestionEngine {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(this.questions));
     } catch {
-      // Ignora erro de cota
+      // Ignora erro
     }
     this.notify();
+  }
+
+  // Busca direcionada para uma categoria especifica com grande lote de questoes
+  public async harvestForCategory(category: Category, targetCount: number = 30): Promise<number> {
+    const newItems: Question[] = [];
+
+    // 1. Gera lote procedural com variacoes unicas daquela disciplina
+    for (let i = 0; i < targetCount; i++) {
+      newItems.push(AIQuestionService.generateProceduralQuestion(category));
+    }
+
+    // 2. Busca online complementar
+    try {
+      const scraped = await scrapeOnlineQuestions();
+      const relevant = scraped.filter((q) => q.category === category);
+      newItems.push(...relevant);
+    } catch {
+      // Mantem as geradas
+    }
+
+    return this.integrateBatch(newItems);
   }
 
   public async generateImmediateHarvest(): Promise<number> {

@@ -31,6 +31,17 @@ export interface NewsItem {
   readTime: string;
 }
 
+export interface Achievement {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  unlocked: boolean;
+  progress: number;
+  maxProgress: number;
+  unlockedAt?: string;
+}
+
 export interface User {
   id: string;
   name: string;
@@ -42,6 +53,7 @@ export interface User {
   xp: number;
   level: number;
   streak: number;
+  featuredAchievements?: string[];
   createdAt: string;
   updatedAt: string;
 }

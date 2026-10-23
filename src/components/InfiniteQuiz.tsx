@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Question, Category } from '../types';
 import { questionEngine } from '../services/questionEngine';
 import { StatsService } from '../services/statsService';
+import { AchievementService } from '../services/achievementService';
 import { useApp } from '../context/AppContext';
 import { useI18n } from '../context/I18nContext';
 import {
@@ -13,7 +14,8 @@ import {
   Filter,
   Check,
   X,
-  AlertCircle
+  AlertCircle,
+  DownloadCloud
 } from 'lucide-react';
 
 interface InfiniteQuizProps {
@@ -34,11 +36,12 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
   const [isAnswered, setIsAnswered] = useState(false);
   const [gameOver, setGameOver] = useState(false);
 
-  // Placar visual da rodada atual
   const [roundHits, setRoundHits] = useState(0);
   const [roundMisses, setRoundMisses] = useState(0);
+  const [isSearchingMore, setIsSearchingMore] = useState(false);
+  const [searchNotification, setSearchNotification] = useState<string | null>(null);
 
-  useEffect(() => {
+  const loadQuestionDeck = () => {
     let pool = selectedCategory
       ? questionEngine.getQuestionsByCategory(selectedCategory)
       : questionEngine.getAllQuestions();
@@ -48,6 +51,10 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
     }
 
     setQuestionList([...pool].sort(() => Math.random() - 0.5));
+  };
+
+  useEffect(() => {
+    loadQuestionDeck();
     setCurrentIdx(0);
     setGameOver(false);
     setIsAnswered(false);
@@ -55,6 +62,20 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
     setRoundHits(0);
     setRoundMisses(0);
   }, [selectedCategory]);
+
+  const handleFetchMoreForCurrentScreen = async () => {
+    setIsSearchingMore(true);
+    setSearchNotification(null);
+
+    const targetCat = selectedCategory || 'algoritmos';
+    const addedCount = await questionEngine.harvestForCategory(targetCat, 35);
+
+    loadQuestionDeck();
+    setIsSearchingMore(false);
+    setSearchNotification(`+${addedCount} novas questoes foram adicionadas a esta trilha!`);
+
+    setTimeout(() => setSearchNotification(null), 4000);
+  };
 
   const q = questionList[currentIdx % (questionList.length || 1)];
 
@@ -71,7 +92,12 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
       const earned = 50 * multiplier;
       addXP(earned);
       setScore((s) => s + earned);
-      setMultiplier((m) => Math.min(m + 1, 5));
+      const nextMultiplier = Math.min(multiplier + 1, 5);
+      setMultiplier(nextMultiplier);
+
+      if (nextMultiplier === 3) AchievementService.unlock('combo_3');
+      if (nextMultiplier === 5) AchievementService.unlock('combo_5');
+      if (roundHits + 1 >= 10) AchievementService.unlock('high_accuracy');
     } else {
       setRoundMisses((m) => m + 1);
       setMultiplier(1);
@@ -99,7 +125,7 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
     setGameOver(false);
     setRoundHits(0);
     setRoundMisses(0);
-    setQuestionList((prev) => [...prev].sort(() => Math.random() - 0.5));
+    loadQuestionDeck();
   };
 
   if (!q) {
@@ -148,7 +174,29 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
 
   return (
     <div className="space-y-4 max-w-xl mx-auto">
-      {/* Placar Visual de Acertos, Erros e Vidas */}
+      {/* Botao de Busca Direta na Pagina de Questoes */}
+      <div className="flex items-center justify-between gap-2">
+        <button
+          onClick={handleFetchMoreForCurrentScreen}
+          disabled={isSearchingMore}
+          className="flex items-center gap-1.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] bg-[var(--bg-card)] border border-[var(--border-subtle)] px-3 py-1.5 rounded-xl hover:border-[var(--border-focus)] transition-colors disabled:opacity-50"
+        >
+          <DownloadCloud className={`w-3.5 h-3.5 ${isSearchingMore ? 'animate-bounce text-[var(--accent)]' : ''}`} />
+          <span>{isSearchingMore ? 'Ampliando Acervo...' : 'Buscar Mais Questoes Para Esta Trilha'}</span>
+        </button>
+
+        <span className="text-xs text-[var(--text-dim)]">
+          {questionList.length} questoes no baralho
+        </span>
+      </div>
+
+      {searchNotification && (
+        <div className="p-2.5 bg-[var(--accent-soft)] border border-[var(--accent)]/40 rounded-xl text-xs text-[var(--accent)] font-medium text-center">
+          {searchNotification}
+        </div>
+      )}
+
+      {/* Placar de Rodada */}
       <div className="flex items-center justify-between bg-[var(--bg-card)] border border-[var(--border-subtle)] px-4 py-2.5 rounded-xl text-xs">
         <div className="flex items-center gap-3">
           {selectedCategory && (
@@ -163,7 +211,6 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
             </div>
           )}
 
-          {/* Indicador de Acertos e Erros da Rodada */}
           <div className="flex items-center gap-2.5 text-[11px] border-r border-[var(--border-subtle)] pr-3">
             <span className="flex items-center gap-1 text-[var(--accent)] font-medium">
               <Check className="w-3 h-3" /> {roundHits}
@@ -206,7 +253,7 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
           {q.question}
         </h3>
 
-        {/* Alternativas com Destaque Visual */}
+        {/* Alternativas */}
         <div className="space-y-2.5">
           {q.options.map((opt, i) => {
             let style = 'bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-main)] hover:border-[var(--border-focus)]';
@@ -248,7 +295,7 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
           })}
         </div>
 
-        {/* Explicacao Conceitual Detalhada (Por que errou / Por que esta certa) */}
+        {/* Explicacao Conceitual Comparativa */}
         {isAnswered && (
           <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] space-y-3">
             {!isUserCorrect && selectedOpt !== null && (
@@ -258,7 +305,7 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
                   <span>Por que a alternativa selecionada esta incorreta?</span>
                 </span>
                 <p className="text-red-200/80 pt-0.5">
-                  Voce selecionou: <em>"{q.options[selectedOpt]}"</em>. Esta opcao nao atende aos criterios da questao porque diverge das propriedades estruturais ou da formulacao formal exigida pelo problema.
+                  Voce marcou: <em>"{q.options[selectedOpt]}"</em>. Esta alternativa diverge das definicoes formais ou dos calculos matematicos exigidos para {t.categories[q.category] || q.category}.
                 </p>
               </div>
             )}
