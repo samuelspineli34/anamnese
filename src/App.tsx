@@ -6,6 +6,7 @@ import { NewsView } from './components/NewsView';
 import { RankingView } from './components/RankingView';
 import { ProfileView } from './components/ProfileView';
 import { SettingsView } from './components/SettingsView';
+import { StatsView } from './components/StatsView';
 import { UpdateModal } from './components/UpdateModal';
 import { checkLatestRelease, ReleaseInfo } from './services/updateService';
 import { questionEngine } from './services/questionEngine';
@@ -28,11 +29,12 @@ import {
   Layers,
   Image,
   Sparkles,
-  UserCheck
+  UserCheck,
+  BarChart2
 } from 'lucide-react';
 
 function MainApp() {
-  const [activeTab, setActiveTab] = useState<'quiz' | 'infinite' | 'news' | 'rank' | 'profile' | 'settings'>('quiz');
+  const [activeTab, setActiveTab] = useState<'quiz' | 'infinite' | 'stats' | 'news' | 'rank' | 'profile' | 'settings'>('quiz');
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [counts, setCounts] = useState<Record<Category, number>>(questionEngine.getCountsByCategory());
   const [availableRelease, setAvailableRelease] = useState<ReleaseInfo | null>(null);
@@ -135,6 +137,17 @@ function MainApp() {
             <span>{t.infinite}</span>
           </button>
           <button
+            onClick={() => setActiveTab('stats')}
+            className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
+              activeTab === 'stats'
+                ? 'bg-[var(--bg-elevated)] text-[var(--text-main)] font-medium'
+                : 'text-[var(--text-muted)] hover:bg-[var(--bg-card)] hover:text-[var(--text-main)]'
+            }`}
+          >
+            <BarChart2 className="w-4 h-4 text-[var(--accent)]" />
+            <span>Estatisticas</span>
+          </button>
+          <button
             onClick={() => setActiveTab('news')}
             className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-left transition-colors ${
               activeTab === 'news'
@@ -202,7 +215,6 @@ function MainApp() {
                 </p>
               </div>
 
-              {/* Grade de 12 Trilhas Curriculares */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {tracks.map((track) => {
                   const Icon = track.icon;
@@ -236,6 +248,7 @@ function MainApp() {
               onClearFilter={() => setSelectedCategory(null)}
             />
           )}
+          {activeTab === 'stats' && <StatsView />}
           {activeTab === 'news' && <NewsView />}
           {activeTab === 'rank' && <RankingView />}
           {activeTab === 'profile' && <ProfileView />}

@@ -8,6 +8,7 @@ interface AppContextType {
   theme: ThemeType;
   setTheme: (theme: ThemeType) => void;
   login: (name: string, email: string) => void;
+  updateUser: (fields: Partial<User>) => void;
   logout: () => void;
   addXP: (amount: number) => void;
   ranking: RankingUser[];
@@ -23,22 +24,29 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const [user, setUser] = useState<User | null>(() => {
     const saved = localStorage.getItem('anamnese_user');
-    return saved ? JSON.parse(saved) : {
-      id: 'usr_recruta',
-      name: 'Operador Padrao',
-      email: 'operador@anamnese.local',
-      xp: 250,
-      level: 1,
-      streak: 4,
-      avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&h=100&fit=crop'
-    };
+    return saved
+      ? JSON.parse(saved)
+      : {
+          id: 'usr_local_default',
+          name: 'Samuel Spineli',
+          email: 'samuel@nullgarden.dev',
+          bio: 'Estudante e Engenheiro de Software focado em sistemas distribuidos e IA.',
+          focusArea: 'Sistemas Nativos & Machine Learning',
+          githubUser: 'samuelspineli34',
+          xp: 350,
+          level: 1,
+          streak: 4,
+          avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=samuel',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        };
   });
 
   const [ranking, setRanking] = useState<RankingUser[]>([
     { id: '1', name: 'Alan Turing', xp: 5400, level: 12, avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=turing', position: 1 },
     { id: '2', name: 'Ada Lovelace', xp: 4890, level: 11, avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=ada', position: 2 },
     { id: '3', name: 'Linus Torvalds', xp: 4100, level: 10, avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=linus', position: 3 },
-    { id: '4', name: 'Operador Padrao (Voce)', xp: 250, level: 1, avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=you', position: 4 }
+    { id: '4', name: 'Samuel Spineli (Voce)', xp: 350, level: 1, avatar: 'https://api.dicebear.com/7.x/bottts/svg?seed=samuel', position: 4 }
   ]);
 
   useEffect(() => {
@@ -55,13 +63,33 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       id: 'usr_' + Date.now(),
       name,
       email,
+      bio: '',
+      focusArea: 'Ciencia da Computacao Geral',
+      githubUser: '',
       xp: 0,
       level: 1,
       streak: 1,
-      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`
+      avatar: `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
     setUser(newUser);
     localStorage.setItem('anamnese_user', JSON.stringify(newUser));
+  };
+
+  const updateUser = (fields: Partial<User>) => {
+    if (!user) return;
+    const updated: User = {
+      ...user,
+      ...fields,
+      updatedAt: new Date().toISOString(),
+    };
+    setUser(updated);
+    localStorage.setItem('anamnese_user', JSON.stringify(updated));
+
+    setRanking((prev) =>
+      prev.map((r) => (r.id === '4' ? { ...r, name: `${updated.name} (Voce)` } : r))
+    );
   };
 
   const logout = () => {
@@ -73,19 +101,20 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!user) return;
     const nextXP = user.xp + amount;
     const nextLevel = Math.floor(nextXP / 500) + 1;
-    const updated = { ...user, xp: nextXP, level: nextLevel };
+    const updated = { ...user, xp: nextXP, level: nextLevel, updatedAt: new Date().toISOString() };
     setUser(updated);
     localStorage.setItem('anamnese_user', JSON.stringify(updated));
 
-    setRanking(prev =>
-      prev.map(r => r.name.includes('(Voce)') ? { ...r, xp: nextXP, level: nextLevel } : r)
+    setRanking((prev) =>
+      prev
+        .map((r) => (r.id === '4' ? { ...r, xp: nextXP, level: nextLevel } : r))
         .sort((a, b) => b.xp - a.xp)
         .map((item, idx) => ({ ...item, position: idx + 1 }))
     );
   };
 
   return (
-    <AppContext.Provider value={{ user, theme, setTheme, login, logout, addXP, ranking }}>
+    <AppContext.Provider value={{ user, theme, setTheme, login, updateUser, logout, addXP, ranking }}>
       {children}
     </AppContext.Provider>
   );

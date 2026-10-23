@@ -25,10 +25,37 @@ export interface User {
   id: string;
   name: string;
   email: string;
+  bio?: string;
+  focusArea?: string;
+  githubUser?: string;
+  avatar: string;
   xp: number;
   level: number;
   streak: number;
-  avatar: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CategoryMetric {
+  category: Category;
+  attempts: number;
+  correct: number;
+  accuracy: number;
+  masteryScore: number;
+  confidenceFactor: number;
+  statusLabel: string;
+}
+
+export interface GlobalStats {
+  totalAttempts: number;
+  totalCorrect: number;
+  overallAccuracy: number;
+  overallMastery: number;
+  streakDays: number;
+  level: number;
+  xp: number;
+  strongestCategory: string;
+  weakestCategory: string;
 }
 
 export interface RankingUser {

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Question, Category } from '../types';
 import { questionEngine } from '../services/questionEngine';
+import { StatsService } from '../services/statsService';
 import { useApp } from '../context/AppContext';
 import { useI18n } from '../context/I18nContext';
 import { RotateCcw, ArrowRight, CheckCircle2, XCircle, HelpCircle, Filter } from 'lucide-react';
@@ -46,7 +47,12 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
     setSelectedOpt(idx);
     setIsAnswered(true);
 
-    if (idx === q.correctIndex) {
+    const isCorrect = idx === q.correctIndex;
+
+    // Registra a resposta no motor estatistico por disciplina
+    StatsService.recordAttempt(q.category, isCorrect);
+
+    if (isCorrect) {
       const earned = 50 * multiplier;
       addXP(earned);
       setScore((s) => s + earned);
@@ -110,7 +116,6 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
 
   return (
     <div className="space-y-4 max-w-xl mx-auto">
-      {/* Barra de Progresso e Tentativas */}
       <div className="flex items-center justify-between bg-[var(--bg-card)] border border-[var(--border-subtle)] px-4 py-2.5 rounded-xl text-xs">
         <div className="flex items-center gap-3">
           {selectedCategory && (
@@ -145,7 +150,6 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
         </div>
       </div>
 
-      {/* Card da Questao */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-6 rounded-2xl space-y-5">
         <div className="flex items-center justify-between text-xs text-[var(--text-dim)]">
           <span className="text-[var(--accent)] font-medium">
@@ -187,7 +191,6 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
           })}
         </div>
 
-        {/* Explicacao Conceitual Didatica */}
         {isAnswered && (
           <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] space-y-4">
             <div className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-subtle)] text-xs leading-relaxed space-y-1">

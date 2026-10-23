@@ -1,78 +1,237 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { useI18n } from '../context/I18nContext';
-import { LogOut, Activity, UserCheck } from 'lucide-react';
+import { LogOut, UserCheck, Edit3, Save, X, Download, Database, Github } from 'lucide-react';
 
 export const ProfileView = () => {
-  const { user, login, logout } = useApp();
-  const { t } = useI18n();
-  const [nameInput, setNameInput] = useState('');
+  const { user, login, updateUser, logout } = useApp();
+  const [isEditing, setIsEditing] = useState<boolean>(false);
+
+  // Estados do formulario de edicao
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [bio, setBio] = useState(user?.bio || '');
+  const [focusArea, setFocusArea] = useState(user?.focusArea || '');
+  const [githubUser, setGithubUser] = useState(user?.githubUser || '');
+  const [avatar, setAvatar] = useState(user?.avatar || '');
 
   if (!user) {
     return (
-      <div className="max-w-sm mx-auto p-6 bg-zinc-900 border border-zinc-800 rounded-xl space-y-4 font-mono">
-        <div className="flex items-center gap-2 text-zinc-100">
-          <UserCheck className="w-5 h-5 text-emerald-500" />
-          <h2 className="text-sm font-bold uppercase tracking-wider">{t.profileView.guestTitle}</h2>
+      <div className="max-w-sm mx-auto p-6 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl space-y-4">
+        <div className="flex items-center gap-2">
+          <UserCheck className="w-5 h-5 text-[var(--accent)]" />
+          <h2 className="text-sm font-semibold">Identificacao de Estudos</h2>
         </div>
         <input
           type="text"
-          placeholder={t.profileView.inputPlaceholder}
-          value={nameInput}
-          onChange={(e) => setNameInput(e.target.value)}
-          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg p-2.5 text-xs text-zinc-200 outline-none focus:border-zinc-700"
+          placeholder="Seu nome"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)]"
         />
         <button
-          onClick={() => nameInput && login(nameInput, `${nameInput.toLowerCase()}@anamnese.local`)}
-          className="w-full bg-zinc-100 text-zinc-950 font-bold py-2.5 rounded-lg hover:bg-zinc-200 text-xs transition-colors"
+          onClick={() => name && login(name, `${name.toLowerCase()}@anamnese.local`)}
+          className="w-full bg-[var(--text-main)] text-[var(--bg-main)] font-medium py-2.5 rounded-lg text-xs"
         >
-          {t.profileView.loginBtn}
+          Iniciar Sessao
         </button>
       </div>
     );
   }
 
+  const handleSave = () => {
+    updateUser({
+      name,
+      email,
+      bio,
+      focusArea,
+      githubUser,
+      avatar: avatar || `https://api.dicebear.com/7.x/bottts/svg?seed=${name}`,
+    });
+    setIsEditing(false);
+  };
+
+  const handleExportDataJSON = () => {
+    const payload = {
+      user,
+      schema_version: '2.0',
+      exported_at: new Date().toISOString(),
+    };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `anamnese_profile_${user.name.toLowerCase().replace(/\s+/g, '_')}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   return (
-    <div className="max-w-md mx-auto space-y-4 font-mono">
-      <div className="p-5 bg-zinc-900/60 border border-zinc-800 rounded-xl flex items-center gap-4">
-        <img
-          src={user.avatar}
-          alt={user.name}
-          className="w-14 h-14 rounded-lg bg-zinc-800 border border-zinc-700 object-cover"
-        />
-        <div>
-          <h2 className="text-sm font-bold text-zinc-100">{user.name}</h2>
-          <span className="text-xs text-emerald-500 font-semibold block mt-0.5">
-            {t.level} {user.level}
-          </span>
-          <div className="flex items-center gap-1.5 mt-1 text-[11px] text-zinc-400">
-            <Activity className="w-3.5 h-3.5 text-emerald-500" />
-            <span>{user.streak} {t.streak}</span>
+    <div className="max-w-xl mx-auto space-y-5">
+      {/* Cabecalho do Perfil */}
+      <div className="p-6 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <img
+            src={user.avatar}
+            alt={user.name}
+            className="w-16 h-16 rounded-2xl bg-[var(--bg-elevated)] border border-[var(--border-subtle)] object-cover"
+          />
+          <div>
+            <h2 className="text-base font-semibold text-[var(--text-main)]">{user.name}</h2>
+            <span className="text-xs text-[var(--accent)] font-medium block">
+              {user.focusArea || 'Ciencia da Computacao'}
+            </span>
+            <span className="text-xs text-[var(--text-dim)] block mt-0.5">{user.email}</span>
           </div>
+        </div>
+
+        <button
+          onClick={() => {
+            setName(user.name);
+            setEmail(user.email);
+            setBio(user.bio || '');
+            setFocusArea(user.focusArea || '');
+            setGithubUser(user.githubUser || '');
+            setAvatar(user.avatar);
+            setIsEditing(!isEditing);
+          }}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-[var(--border-subtle)] bg-[var(--bg-elevated)] text-xs text-[var(--text-muted)] hover:text-[var(--text-main)] transition-colors"
+        >
+          {isEditing ? <X className="w-3.5 h-3.5" /> : <Edit3 className="w-3.5 h-3.5" />}
+          <span>{isEditing ? 'Cancelar' : 'Editar Dados'}</span>
+        </button>
+      </div>
+
+      {/* Formulario de Edicao */}
+      {isEditing && (
+        <div className="p-6 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl space-y-4">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-[var(--text-dim)]">
+            Editar Informacoes da Conta
+          </h3>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[11px] text-[var(--text-muted)]">Nome Completo</label>
+              <input
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] text-[var(--text-muted)]">E-mail</label>
+              <input
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)]"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="space-y-1">
+              <label className="text-[11px] text-[var(--text-muted)]">Area de Foco / Pesquisa</label>
+              <input
+                type="text"
+                placeholder="Ex: Sistemas Distribuidos & IA"
+                value={focusArea}
+                onChange={(e) => setFocusArea(e.target.value)}
+                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)]"
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="text-[11px] text-[var(--text-muted)]">Usuario do GitHub</label>
+              <input
+                type="text"
+                placeholder="Ex: samuelspineli34"
+                value={githubUser}
+                onChange={(e) => setGithubUser(e.target.value)}
+                className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)]"
+              />
+            </div>
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] text-[var(--text-muted)]">Biografia / Descricao Curta</label>
+            <textarea
+              rows={2}
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)] resize-none"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-[11px] text-[var(--text-muted)]">URL do Avatar / Imagem de Perfil</label>
+            <input
+              type="text"
+              value={avatar}
+              onChange={(e) => setAvatar(e.target.value)}
+              className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)]"
+            />
+          </div>
+
+          <button
+            onClick={handleSave}
+            className="flex items-center justify-center gap-1.5 w-full bg-[var(--accent)] text-[var(--bg-main)] font-medium py-2.5 rounded-lg text-xs hover:opacity-90 transition-opacity"
+          >
+            <Save className="w-3.5 h-3.5" />
+            <span>Salvar Alteracoes</span>
+          </button>
+        </div>
+      )}
+
+      {/* Biografia e Detalhes */}
+      {user.bio && !isEditing && (
+        <div className="p-5 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl text-xs text-[var(--text-muted)] leading-relaxed">
+          <span className="text-[10px] text-[var(--text-dim)] uppercase font-semibold block mb-1">Sobre:</span>
+          <p>{user.bio}</p>
+          {user.githubUser && (
+            <div className="pt-3 mt-3 border-t border-[var(--border-subtle)] flex items-center gap-2 text-[var(--text-main)]">
+              <Github className="w-3.5 h-3.5 text-[var(--text-dim)]" />
+              <span>github.com/{user.githubUser}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Metricas */}
+      <div className="grid grid-cols-2 gap-3 text-center">
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-4 rounded-xl">
+          <span className="text-xs text-[var(--text-dim)] block">Total de Experiencia</span>
+          <div className="text-xl font-bold text-[var(--text-main)] mt-1">{user.xp} XP</div>
+        </div>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-4 rounded-xl">
+          <span className="text-xs text-[var(--text-dim)] block">Questoes Resolvidas</span>
+          <div className="text-xl font-bold text-[var(--accent)] mt-1">{(user.xp / 50).toFixed(0)}</div>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 text-center">
-        <div className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-xl">
-          <span className="text-[10px] text-zinc-500 uppercase font-semibold block">
-            {t.profileView.statsTotalXp}
-          </span>
-          <div className="text-xl font-bold text-zinc-100 mt-1">{user.xp}</div>
+      {/* Preparacao para Banco de Dados */}
+      <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl flex items-center justify-between text-xs">
+        <div className="flex items-center gap-2 text-[var(--text-muted)]">
+          <Database className="w-4 h-4 text-[var(--accent)]" />
+          <span>Esquema de Dados: Pronto para Sincronizacao PostgreSQL</span>
         </div>
-        <div className="bg-zinc-900/40 border border-zinc-800 p-4 rounded-xl">
-          <span className="text-[10px] text-zinc-500 uppercase font-semibold block">
-            {t.profileView.statsResolutions}
-          </span>
-          <div className="text-xl font-bold text-zinc-100 mt-1">{(user.xp / 50).toFixed(0)}</div>
-        </div>
+        <button
+          onClick={handleExportDataJSON}
+          className="flex items-center gap-1 text-[var(--text-main)] border border-[var(--border-subtle)] px-2.5 py-1.5 rounded-lg hover:bg-[var(--bg-elevated)] transition-colors"
+          title="Exportar dados do usuario em formato JSON"
+        >
+          <Download className="w-3.5 h-3.5" />
+          <span>Exportar JSON</span>
+        </button>
       </div>
 
       <button
         onClick={logout}
-        className="w-full flex items-center justify-center gap-2 p-2.5 text-red-400 border border-red-950 rounded-lg bg-red-950/20 hover:bg-red-950/40 text-xs font-semibold transition-colors"
+        className="w-full flex items-center justify-center gap-2 p-2.5 text-red-400 border border-red-900/30 rounded-xl bg-red-950/20 hover:bg-red-950/40 text-xs font-medium transition-colors"
       >
         <LogOut className="w-3.5 h-3.5" />
-        <span>{t.profileView.logoutBtn}</span>
+        <span>Sair da Conta</span>
       </button>
     </div>
   );
