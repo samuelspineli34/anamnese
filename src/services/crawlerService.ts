@@ -4,8 +4,14 @@ export async function scrapeOnlineQuestions(): Promise<Question[]> {
   const scraped: Question[] = [];
 
   try {
-    // Busca um lote maior de 50 itens de computacao
-    const res = await fetch('https://opentdb.com/api.php?amount=50&category=18&type=multiple');
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 5000);
+
+    const res = await fetch('https://opentdb.com/api.php?amount=40&category=18&type=multiple', {
+      signal: controller.signal,
+    });
+    clearTimeout(timeout);
+
     if (!res.ok) return [];
 
     const data = await res.json();
@@ -14,30 +20,45 @@ export async function scrapeOnlineQuestions(): Promise<Question[]> {
         const rawQ = decodeHtmlEntities(item.question);
         const qLower = rawQ.toLowerCase();
 
-        // Roteamento semantico de precisao
+        // Se contem mencao a cidades, empresas, sedes ou fundadores -> ESTRICTAMENTE TRIVIA
+        const isCompanyOrHistory =
+          qLower.includes('headquarters') ||
+          qLower.includes('silicon valley') ||
+          qLower.includes('company') ||
+          qLower.includes('nvidia') ||
+          qLower.includes('apple') ||
+          qLower.includes('microsoft') ||
+          qLower.includes('founder') ||
+          qLower.includes('released in') ||
+          qLower.includes('ceo') ||
+          qLower.includes('game') ||
+          qLower.includes('movie');
+
         let category: Category = 'trivia';
 
-        if (qLower.includes('cryptography') || qLower.includes('rsa') || qLower.includes('security') || qLower.includes('firewall') || qLower.includes('hash') || qLower.includes('injection') || qLower.includes('exploit')) {
+        if (isCompanyOrHistory) {
+          category = 'trivia';
+        } else if (qLower.includes('cryptography') || qLower.includes('rsa') || qLower.includes('security') || qLower.includes('firewall') || qLower.includes('hash')) {
           category = 'seguranca';
-        } else if (qLower.includes('pipeline') || qLower.includes('cpu') || qLower.includes('cache') || qLower.includes('register') || qLower.includes('processor') || qLower.includes('instruction') || qLower.includes('mips') || qLower.includes('arm')) {
+        } else if (qLower.includes('pipeline') || qLower.includes('cpu') || qLower.includes('cache') || qLower.includes('register') || qLower.includes('instruction')) {
           category = 'arquitetura';
-        } else if (qLower.includes('python') || qLower.includes('javascript') || qLower.includes('c++') || qLower.includes('rust') || qLower.includes('syntax') || qLower.includes('variable') || qLower.includes('pointer') || qLower.includes('datatype')) {
+        } else if (qLower.includes('python') || qLower.includes('javascript') || qLower.includes('c++') || qLower.includes('rust') || qLower.includes('syntax')) {
           category = 'linguagens';
-        } else if (qLower.includes('pixel') || qLower.includes('shader') || qLower.includes('render') || qLower.includes('raster') || qLower.includes('ray tracing') || qLower.includes('polygon') || qLower.includes('texture')) {
+        } else if (qLower.includes('pixel') || qLower.includes('shader') || qLower.includes('render') || qLower.includes('raster')) {
           category = 'computacao_grafica';
-        } else if (qLower.includes('agile') || qLower.includes('design pattern') || qLower.includes('refactoring') || qLower.includes('solid') || qLower.includes('scrum') || qLower.includes('testing')) {
+        } else if (qLower.includes('design pattern') || qLower.includes('solid') || qLower.includes('refactoring') || qLower.includes('agile')) {
           category = 'engenharia_software';
-        } else if (qLower.includes('network') || qLower.includes('protocol') || qLower.includes('ip') || qLower.includes('tcp') || qLower.includes('udp') || qLower.includes('dns') || qLower.includes('packet') || qLower.includes('ethernet')) {
+        } else if (qLower.includes('protocol') || qLower.includes('ip address') || qLower.includes('tcp') || qLower.includes('udp') || qLower.includes('packet')) {
           category = 'redes';
-        } else if (qLower.includes('operating system') || qLower.includes('kernel') || qLower.includes('thread') || qLower.includes('deadlock') || qLower.includes('page') || qLower.includes('semaphore') || qLower.includes('linux')) {
+        } else if (qLower.includes('operating system') || qLower.includes('kernel') || qLower.includes('deadlock') || qLower.includes('page fault')) {
           category = 'so';
-        } else if (qLower.includes('sql') || qLower.includes('database') || qLower.includes('acid') || qLower.includes('relational') || qLower.includes('query') || qLower.includes('foreign key')) {
+        } else if (qLower.includes('sql') || qLower.includes('database') || qLower.includes('acid') || qLower.includes('foreign key')) {
           category = 'banco_dados';
-        } else if (qLower.includes('neural') || qLower.includes('machine learning') || qLower.includes('gradient') || qLower.includes('deep learning') || qLower.includes('ai') || qLower.includes('intelligence')) {
+        } else if (qLower.includes('neural') || qLower.includes('machine learning') || qLower.includes('deep learning')) {
           category = 'ia';
-        } else if (qLower.includes('compiler') || qLower.includes('grammar') || qLower.includes('ast') || qLower.includes('parser') || qLower.includes('automata') || qLower.includes('turing')) {
+        } else if (qLower.includes('compiler') || qLower.includes('ast') || qLower.includes('parser') || qLower.includes('grammar')) {
           category = 'compiladores';
-        } else if (qLower.includes('algorithm') || qLower.includes('binary search') || qLower.includes('sorting') || qLower.includes('tree') || qLower.includes('graph') || qLower.includes('complexity') || qLower.includes('big o')) {
+        } else if (qLower.includes('quicksort') || qLower.includes('binary search') || qLower.includes('tree') || qLower.includes('graph') || qLower.includes('complexity')) {
           category = 'algoritmos';
         } else {
           category = 'trivia';
@@ -48,17 +69,17 @@ export async function scrapeOnlineQuestions(): Promise<Question[]> {
         );
 
         scraped.push({
-          id: `ext_${Date.now()}_${idx}`,
+          id: `scraped_${Date.now()}_${idx}`,
           category,
           question: rawQ,
           options,
           correctIndex: options.indexOf(decodeHtmlEntities(item.correct_answer)),
-          explanation: `Questao tecnica avaliativa catalogada em ${category.replace('_', ' ').toUpperCase()} com fundamentacao teorica estrutural.`,
+          explanation: `Questao catalogada formalmente no modulo de ${category.toUpperCase()}.`,
         });
       });
     }
   } catch {
-    // Ignora erro
+    // Falha silenciosa
   }
 
   return scraped;

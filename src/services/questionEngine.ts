@@ -1,23 +1,8 @@
 import { Question, Category } from '../types';
 import { scrapeOnlineQuestions } from './crawlerService';
-import { AIQuestionService } from './aiQuestionService';
+import { ProceduralGenerator } from './proceduralGenerator';
 
-const STORAGE_KEY = 'anamnese_questions_repo';
-
-const ALL_CATEGORIES: Category[] = [
-  'algoritmos',
-  'so',
-  'redes',
-  'banco_dados',
-  'compiladores',
-  'ia',
-  'arquitetura',
-  'engenharia_software',
-  'seguranca',
-  'linguagens',
-  'computacao_grafica',
-  'trivia'
-];
+const STORAGE_KEY = 'anamnese_questions_repo_v3';
 
 type Listener = () => void;
 
@@ -27,6 +12,7 @@ class QuestionEngine {
   private isHarvesting: boolean = false;
 
   constructor() {
+    this.cleanLegacyContaminatedCache();
     this.init();
   }
 
@@ -39,30 +25,49 @@ class QuestionEngine {
     this.listeners.forEach((l) => l());
   }
 
+  private cleanLegacyContaminatedCache() {
+    localStorage.removeItem('anamnese_questions_repo');
+    localStorage.removeItem('anamnese_questions_repo_v2');
+  }
+
   private init() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          this.questions = parsed;
+        if (Array.isArray(parsed) && parsed.length >= 30) {
+          this.questions = this.sanitizeDataset(parsed);
+          this.save();
           return;
         }
       }
     } catch {
       // Ignora erro
     }
-    this.populateBaseline();
+
+    this.questions = ProceduralGenerator.generateComprehensiveCurriculum();
+    this.save();
   }
 
-  private populateBaseline() {
-    const baseline: Question[] = [];
-    ALL_CATEGORIES.forEach((cat) => {
-      baseline.push(AIQuestionService.generateProceduralQuestion(cat));
-      baseline.push(AIQuestionService.generateProceduralQuestion(cat));
+  private sanitizeDataset(dataset: Question[]): Question[] {
+    return dataset.map((q) => {
+      const qLower = q.question.toLowerCase();
+      const isTrivia =
+        qLower.includes('headquarters') ||
+        qLower.includes('nvidia') ||
+        qLower.includes('silicon valley') ||
+        qLower.includes('founded') ||
+        qLower.includes('apple') ||
+        qLower.includes('microsoft') ||
+        qLower.includes('steve jobs') ||
+        qLower.includes('nintendo') ||
+        qLower.includes('video game');
+
+      if (isTrivia && q.category !== 'trivia') {
+        return { ...q, category: 'trivia' as Category };
+      }
+      return q;
     });
-    this.questions = baseline;
-    this.save();
   }
 
   private save() {
@@ -74,21 +79,15 @@ class QuestionEngine {
     this.notify();
   }
 
-  // Gera questoes imediatamente e garante aumento do acervo
   public async generateImmediateHarvest(): Promise<number> {
     if (this.isHarvesting) return 0;
     this.isHarvesting = true;
 
     try {
-      // Gera novas questoes ineditas para todas as 12 categorias
-      const newItems = await AIQuestionService.generateImmediateHarvest(ALL_CATEGORIES);
-
-      // Tenta puxar lote online adicional
-      const onlineScraped = await scrapeOnlineQuestions();
-
-      const combined = [...newItems, ...onlineScraped];
-      const added = this.integrateBatch(combined);
-      return added;
+      const generated = ProceduralGenerator.generateComprehensiveCurriculum();
+      const scraped = await scrapeOnlineQuestions();
+      const combined = [...generated, ...scraped];
+      return this.integrateBatch(combined);
     } finally {
       this.isHarvesting = false;
     }
@@ -96,8 +95,9 @@ class QuestionEngine {
 
   public integrateBatch(newBatch: Question[]): number {
     if (!newBatch || newBatch.length === 0) return 0;
+    const cleanBatch = this.sanitizeDataset(newBatch);
     const existingTexts = new Set(this.questions.map((q) => q.question.toLowerCase().trim()));
-    const unique = newBatch.filter((q) => !existingTexts.has(q.question.toLowerCase().trim()));
+    const unique = cleanBatch.filter((q) => !existingTexts.has(q.question.toLowerCase().trim()));
 
     if (unique.length > 0) {
       this.questions = [...this.questions, ...unique];

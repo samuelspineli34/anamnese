@@ -21,6 +21,16 @@ export interface Question {
   explanation: string;
 }
 
+export interface NewsItem {
+  id: string;
+  title: string;
+  summary: string;
+  category: string;
+  date: string;
+  url: string;
+  readTime: string;
+}
+
 export interface User {
   id: string;
   name: string;
