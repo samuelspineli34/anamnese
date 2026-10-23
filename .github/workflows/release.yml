@@ -30,6 +30,12 @@ jobs:
           DEFAULT_BUMP: patch
           RELEASE_BRANCHES: main
 
+      - name: Sync package.json version with generated tag
+        run: |
+          CLEAN_VER="${{ steps.tag_version.outputs.new_tag }}"
+          CLEAN_VER="${CLEAN_VER#v}"
+          npm version $CLEAN_VER --no-git-tag-version --allow-same-version
+
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4
         with:
@@ -82,6 +88,13 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+
+      - name: Sync package.json version with generated tag
+        shell: bash
+        run: |
+          CLEAN_VER="${{ needs.build-web-and-android.outputs.tag }}"
+          CLEAN_VER="${CLEAN_VER#v}"
+          npm version $CLEAN_VER --no-git-tag-version --allow-same-version
 
       - name: Setup Node.js Environment
         uses: actions/setup-node@v4

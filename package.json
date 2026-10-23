@@ -1,7 +1,7 @@
 {
   "name": "anamnese",
   "private": true,
-  "version": "1.0.0",
+  "version": "0.0.14",
   "description": "Plataforma tecnica de diagnostico estrutural, telemetria continua e consolidacao de conhecimento em Ciencia da Computacao e Inteligencia Artificial.",
   "author": "NullGarden",
   "type": "module",

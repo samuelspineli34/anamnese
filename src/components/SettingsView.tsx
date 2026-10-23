@@ -63,7 +63,8 @@ export const SettingsView: React.FC = () => {
     if (res.hasUpdate && res.release) {
       setFoundRelease(res.release);
     } else {
-      setUpdateFeedback(`Voce ja esta utilizando a versao mais recente (v${res.currentVersion}).`);
+      const remoteTag = res.latestRemoteVersion ? ` | Ultimo release no GitHub: ${res.latestRemoteVersion}` : '';
+      setUpdateFeedback(`Voce ja esta utilizando a versao mais recente (v${res.currentVersion})${remoteTag}.`);
     }
   };
 

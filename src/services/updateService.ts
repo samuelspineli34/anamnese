@@ -16,7 +16,7 @@ export function getLocalAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.0.0';
+  return '0.0.14';
 }
 
 export function detectCurrentPlatform(): 'windows' | 'android' | 'web' {
@@ -26,7 +26,12 @@ export function detectCurrentPlatform(): 'windows' | 'android' | 'web' {
   return 'web';
 }
 
-export async function checkLatestRelease(): Promise<{ hasUpdate: boolean; release?: ReleaseInfo; currentVersion: string }> {
+export async function checkLatestRelease(): Promise<{
+  hasUpdate: boolean;
+  release?: ReleaseInfo;
+  currentVersion: string;
+  latestRemoteVersion?: string;
+}> {
   const currentVersion = getLocalAppVersion();
 
   try {
@@ -39,9 +44,13 @@ export async function checkLatestRelease(): Promise<{ hasUpdate: boolean; releas
     }
 
     const data = await res.json();
-    const latestTag = (data.tag_name || '').replace(/^v/, '');
+    const latestTag = data.tag_name || '';
+    const latestClean = latestTag.replace(/^v/, '');
+    const currentClean = currentVersion.replace(/^v/, '');
 
-    if (isNewerVersion(latestTag, currentVersion)) {
+    const hasUpdate = isNewerVersion(latestClean, currentClean);
+
+    if (hasUpdate) {
       const platform = detectCurrentPlatform();
       let downloadUrl = data.html_url;
       let fileName = 'Nova Versao';
@@ -65,10 +74,11 @@ export async function checkLatestRelease(): Promise<{ hasUpdate: boolean; releas
       return {
         hasUpdate: true,
         currentVersion,
+        latestRemoteVersion: latestTag,
         release: {
           version: data.tag_name,
           name: data.name || data.tag_name,
-          body: data.body || 'Melhorias de desempenho e atualizacoes no acervo de questoes.',
+          body: data.body || 'Atualizacoes tecnicas e aprimoramentos no banco de questoes.',
           publishedAt: new Date(data.published_at).toLocaleDateString('pt-BR'),
           downloadUrl,
           platform,
@@ -77,15 +87,13 @@ export async function checkLatestRelease(): Promise<{ hasUpdate: boolean; releas
       };
     }
 
-    return { hasUpdate: false, currentVersion };
-  } catch (err) {
+    return { hasUpdate: false, currentVersion, latestRemoteVersion: latestTag };
+  } catch {
     return { hasUpdate: false, currentVersion };
   }
 }
 
-// Executa o download/atualizacao conforme a plataforma
 export function executePlatformUpdate(downloadUrl: string): void {
-  // 1. Se estiver rodando no Electron (Windows Desktop)
   if (typeof window !== 'undefined' && (window as any).require) {
     try {
       const { ipcRenderer, shell } = (window as any).require('electron');
@@ -96,12 +104,10 @@ export function executePlatformUpdate(downloadUrl: string): void {
       ipcRenderer.send('open-external-url', downloadUrl);
       return;
     } catch {
-      // Fallback para navegador
+      // Fallback
     }
   }
 
-  // 2. Se for Android nativo ou PWA/Web
-  // Utiliza _system para acionar o DownloadManager do Android nativamente
   const link = document.createElement('a');
   link.href = downloadUrl;
   link.target = '_blank';
