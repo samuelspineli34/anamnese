@@ -66,4 +66,4 @@ export class StorageService {
     localStorage.removeItem('anamnese_questions_repo');
     localStorage.removeItem('anamnese_saved_articles');
   }
-}
+}   

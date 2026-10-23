@@ -8,12 +8,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        cyber: {
-          bg: '#0a0b10',
-          card: '#121526',
-          primary: '#00ffcc',
-          secondary: '#ff007f',
-          text: '#e0e6ed'
+        anamnese: {
+          void: '#06080d',
+          base: '#0a0d14',
+          surface: '#0f1420',
+          elevated: '#141b2b',
+          border: '#1a2337',
+          cyan: '#06b6d4',
+          teal: '#14b8a6',
+          alert: '#ef4444',
+          warn: '#f59e0b',
         }
       }
     },
