@@ -2,15 +2,18 @@
   "name": "anamnese",
   "private": true,
   "version": "1.0.0",
+  "description": "Plataforma tecnica de diagnostico estrutural, telemetria continua e consolidacao de conhecimento em Ciencia da Computacao e Inteligencia Artificial.",
+  "author": "NullGarden",
   "type": "module",
   "main": "electron/main.cjs",
-"scripts": {
+  "scripts": {
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "crawl": "node scripts/crawler.js",
     "desktop": "vite build && electron .",
-    "electron:build": "vite build && electron-builder --win portable"
+    "electron:build": "vite build && electron-builder --win portable",
+    "icons": "npx @capacitor/assets generate --assetPath assets --iconBackgroundColor '#06080d' --iconBackgroundColorDark '#06080d'"
   },
   "build": {
     "appId": "com.anamnese.app",
@@ -20,10 +23,12 @@
     },
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "assets/**/*"
     ],
     "win": {
       "target": "portable",
+      "icon": "assets/anamnese.png",
       "artifactName": "anamnese-windows-${version}.${ext}"
     }
   },
@@ -32,21 +37,22 @@
     "@capacitor/core": "^6.0.0",
     "canvas-confetti": "^1.9.2",
     "clsx": "^2.1.0",
-    "electron-updater": "^6.8.9",
     "lucide-react": "^0.359.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "tailwind-merge": "^2.2.1"
   },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
     "@capacitor/cli": "^6.0.0",
     "@types/canvas-confetti": "^1.6.4",
     "@types/react": "^18.2.66",
     "@types/react-dom": "^18.2.22",
     "@vitejs/plugin-react": "^4.2.1",
     "autoprefixer": "^10.4.19",
-    "electron": "^29.1.5",
+    "electron": "^29.4.6",
     "electron-builder": "^24.13.3",
+    "electron-updater": "^6.1.8",
     "postcss": "^8.4.38",
     "tailwindcss": "^3.4.1",
     "typescript": "^5.2.2",
