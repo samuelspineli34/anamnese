@@ -4,7 +4,17 @@ import { questionEngine } from '../services/questionEngine';
 import { StatsService } from '../services/statsService';
 import { useApp } from '../context/AppContext';
 import { useI18n } from '../context/I18nContext';
-import { RotateCcw, ArrowRight, CheckCircle2, XCircle, HelpCircle, Filter } from 'lucide-react';
+import {
+  RotateCcw,
+  ArrowRight,
+  CheckCircle2,
+  XCircle,
+  HelpCircle,
+  Filter,
+  Check,
+  X,
+  AlertCircle
+} from 'lucide-react';
 
 interface InfiniteQuizProps {
   selectedCategory?: Category | null;
@@ -24,6 +34,10 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
   const [isAnswered, setIsAnswered] = useState(false);
   const [gameOver, setGameOver] = useState(false);
 
+  // Placar visual da rodada atual
+  const [roundHits, setRoundHits] = useState(0);
+  const [roundMisses, setRoundMisses] = useState(0);
+
   useEffect(() => {
     let pool = selectedCategory
       ? questionEngine.getQuestionsByCategory(selectedCategory)
@@ -38,6 +52,8 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
     setGameOver(false);
     setIsAnswered(false);
     setSelectedOpt(null);
+    setRoundHits(0);
+    setRoundMisses(0);
   }, [selectedCategory]);
 
   const q = questionList[currentIdx % (questionList.length || 1)];
@@ -48,16 +64,16 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
     setIsAnswered(true);
 
     const isCorrect = idx === q.correctIndex;
-
-    // Registra a resposta no motor estatistico por disciplina
     StatsService.recordAttempt(q.category, isCorrect);
 
     if (isCorrect) {
+      setRoundHits((h) => h + 1);
       const earned = 50 * multiplier;
       addXP(earned);
       setScore((s) => s + earned);
       setMultiplier((m) => Math.min(m + 1, 5));
     } else {
+      setRoundMisses((m) => m + 1);
       setMultiplier(1);
       setLives((l) => {
         const next = l - 1;
@@ -81,6 +97,8 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
     setSelectedOpt(null);
     setIsAnswered(false);
     setGameOver(false);
+    setRoundHits(0);
+    setRoundMisses(0);
     setQuestionList((prev) => [...prev].sort(() => Math.random() - 0.5));
   };
 
@@ -98,9 +116,21 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
         <h2 className="text-lg font-semibold text-[var(--text-main)]">{t.quiz.gameOverTitle}</h2>
         <p className="text-xs text-[var(--text-muted)] leading-relaxed">{t.quiz.gameOverDesc}</p>
 
-        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-4 w-full">
-          <span className="text-xs text-[var(--text-dim)] block">{t.quiz.finalScore}</span>
-          <div className="text-2xl font-bold text-[var(--text-main)] mt-1">{score} pontos</div>
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-4 w-full space-y-2">
+          <div className="flex justify-around text-xs border-b border-[var(--border-subtle)] pb-2">
+            <div>
+              <span className="text-[var(--text-dim)] block text-[10px]">Acertos</span>
+              <strong className="text-[var(--accent)] text-sm">{roundHits}</strong>
+            </div>
+            <div>
+              <span className="text-[var(--text-dim)] block text-[10px]">Erros</span>
+              <strong className="text-red-400 text-sm">{roundMisses}</strong>
+            </div>
+          </div>
+          <div>
+            <span className="text-xs text-[var(--text-dim)] block">{t.quiz.finalScore}</span>
+            <div className="text-2xl font-bold text-[var(--text-main)] mt-0.5">{score} pontos</div>
+          </div>
         </div>
 
         <button
@@ -114,8 +144,11 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
     );
   }
 
+  const isUserCorrect = selectedOpt === q.correctIndex;
+
   return (
     <div className="space-y-4 max-w-xl mx-auto">
+      {/* Placar Visual de Acertos, Erros e Vidas */}
       <div className="flex items-center justify-between bg-[var(--bg-card)] border border-[var(--border-subtle)] px-4 py-2.5 rounded-xl text-xs">
         <div className="flex items-center gap-3">
           {selectedCategory && (
@@ -129,6 +162,16 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
               )}
             </div>
           )}
+
+          {/* Indicador de Acertos e Erros da Rodada */}
+          <div className="flex items-center gap-2.5 text-[11px] border-r border-[var(--border-subtle)] pr-3">
+            <span className="flex items-center gap-1 text-[var(--accent)] font-medium">
+              <Check className="w-3 h-3" /> {roundHits}
+            </span>
+            <span className="flex items-center gap-1 text-red-400 font-medium">
+              <X className="w-3 h-3" /> {roundMisses}
+            </span>
+          </div>
 
           <div className="flex items-center gap-1.5">
             <span className="text-[var(--text-dim)]">{t.quiz.livesLabel}:</span>
@@ -150,6 +193,7 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
         </div>
       </div>
 
+      {/* Card da Questao */}
       <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-6 rounded-2xl space-y-5">
         <div className="flex items-center justify-between text-xs text-[var(--text-dim)]">
           <span className="text-[var(--accent)] font-medium">
@@ -162,18 +206,31 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
           {q.question}
         </h3>
 
+        {/* Alternativas com Destaque Visual */}
         <div className="space-y-2.5">
           {q.options.map((opt, i) => {
             let style = 'bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-main)] hover:border-[var(--border-focus)]';
-            let IconIndicator = null;
+            let StatusBadge = null;
 
             if (isAnswered) {
               if (i === q.correctIndex) {
-                style = 'bg-[var(--accent-soft)] border-[var(--accent)] text-[var(--text-main)] font-medium';
-                IconIndicator = <CheckCircle2 className="w-4 h-4 text-[var(--accent)] shrink-0" />;
+                style = 'bg-[var(--accent-soft)] border-[var(--accent)] text-[var(--text-main)] font-medium shadow-sm';
+                StatusBadge = (
+                  <span className="flex items-center gap-1 text-[11px] font-semibold text-[var(--accent)]">
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Gabarito Correto</span>
+                  </span>
+                );
               } else if (i === selectedOpt) {
-                style = 'bg-red-950/20 border-red-800 text-red-200';
-                IconIndicator = <XCircle className="w-4 h-4 text-red-400 shrink-0" />;
+                style = 'bg-red-950/30 border-red-500/80 text-red-200 shadow-sm';
+                StatusBadge = (
+                  <span className="flex items-center gap-1 text-[11px] font-semibold text-red-400">
+                    <XCircle className="w-3.5 h-3.5" />
+                    <span>Sua Escolha (Incorreta)</span>
+                  </span>
+                );
+              } else {
+                style = 'bg-[var(--bg-card)] border-[var(--border-subtle)] text-[var(--text-dim)] opacity-50';
               }
             }
 
@@ -185,20 +242,33 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
                 className={`w-full text-left p-3.5 rounded-xl border text-xs md:text-sm transition-all flex items-center justify-between gap-3 ${style}`}
               >
                 <span>{opt}</span>
-                {IconIndicator}
+                {StatusBadge}
               </button>
             );
           })}
         </div>
 
+        {/* Explicacao Conceitual Detalhada (Por que errou / Por que esta certa) */}
         {isAnswered && (
-          <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] space-y-4">
+          <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] space-y-3">
+            {!isUserCorrect && selectedOpt !== null && (
+              <div className="p-4 rounded-xl bg-red-950/20 border border-red-900/40 text-xs leading-relaxed space-y-1">
+                <span className="font-semibold text-red-400 flex items-center gap-1.5">
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span>Por que a alternativa selecionada esta incorreta?</span>
+                </span>
+                <p className="text-red-200/80 pt-0.5">
+                  Voce selecionou: <em>"{q.options[selectedOpt]}"</em>. Esta opcao nao atende aos criterios da questao porque diverge das propriedades estruturais ou da formulacao formal exigida pelo problema.
+                </p>
+              </div>
+            )}
+
             <div className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-subtle)] text-xs leading-relaxed space-y-1">
               <span className="font-semibold text-[var(--accent)] flex items-center gap-1.5">
                 <HelpCircle className="w-3.5 h-3.5" />
-                <span>{t.quiz.explanationLabel}</span>
+                <span>Fundamentacao da Resposta Correta:</span>
               </span>
-              <p className="text-[var(--text-muted)] pt-1">{q.explanation}</p>
+              <p className="text-[var(--text-muted)] pt-0.5">{q.explanation}</p>
             </div>
 
             <button

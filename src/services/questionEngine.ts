@@ -19,13 +19,24 @@ const ALL_CATEGORIES: Category[] = [
   'trivia'
 ];
 
+type Listener = () => void;
+
 class QuestionEngine {
   private questions: Question[] = [];
+  private listeners: Set<Listener> = new Set();
   private isHarvesting: boolean = false;
 
   constructor() {
     this.init();
-    this.runAutonomousHarvesting();
+  }
+
+  public subscribe(listener: Listener): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private notify() {
+    this.listeners.forEach((l) => l());
   }
 
   private init() {
@@ -45,11 +56,10 @@ class QuestionEngine {
   }
 
   private populateBaseline() {
-    // Gera questoes procedurais de partida para cada uma das 12 disciplinas
     const baseline: Question[] = [];
     ALL_CATEGORIES.forEach((cat) => {
-      const items = AIQuestionService.generateProceduralBatch(cat);
-      baseline.push(...items);
+      baseline.push(AIQuestionService.generateProceduralQuestion(cat));
+      baseline.push(AIQuestionService.generateProceduralQuestion(cat));
     });
     this.questions = baseline;
     this.save();
@@ -61,26 +71,24 @@ class QuestionEngine {
     } catch {
       // Ignora erro de cota
     }
+    this.notify();
   }
 
-  // Monitoramento autonomo permanente em segundo plano
-  public async runAutonomousHarvesting(): Promise<void> {
-    if (this.isHarvesting) return;
+  // Gera questoes imediatamente e garante aumento do acervo
+  public async generateImmediateHarvest(): Promise<number> {
+    if (this.isHarvesting) return 0;
     this.isHarvesting = true;
 
     try {
-      // 1. Busca externa massiva via OpenTDB
-      const scraped = await scrapeOnlineQuestions();
-      this.integrateBatch(scraped);
+      // Gera novas questoes ineditas para todas as 12 categorias
+      const newItems = await AIQuestionService.generateImmediateHarvest(ALL_CATEGORIES);
 
-      // 2. Verifica categorias deficientes e complementa com IA/Procedural
-      const counts = this.getCountsByCategory();
-      for (const cat of ALL_CATEGORIES) {
-        if (counts[cat] < 8) {
-          const aiItems = await AIQuestionService.generateAIBatch(cat, 3);
-          this.integrateBatch(aiItems);
-        }
-      }
+      // Tenta puxar lote online adicional
+      const onlineScraped = await scrapeOnlineQuestions();
+
+      const combined = [...newItems, ...onlineScraped];
+      const added = this.integrateBatch(combined);
+      return added;
     } finally {
       this.isHarvesting = false;
     }
@@ -88,8 +96,8 @@ class QuestionEngine {
 
   public integrateBatch(newBatch: Question[]): number {
     if (!newBatch || newBatch.length === 0) return 0;
-    const existing = new Set(this.questions.map((q) => q.question.toLowerCase().trim()));
-    const unique = newBatch.filter((q) => !existing.has(q.question.toLowerCase().trim()));
+    const existingTexts = new Set(this.questions.map((q) => q.question.toLowerCase().trim()));
+    const unique = newBatch.filter((q) => !existingTexts.has(q.question.toLowerCase().trim()));
 
     if (unique.length > 0) {
       this.questions = [...this.questions, ...unique];

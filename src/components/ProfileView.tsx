@@ -1,12 +1,11 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import { LogOut, UserCheck, Edit3, Save, X, Download, Database, Github } from 'lucide-react';
+import { LogOut, UserCheck, Edit3, Save, X, Github } from 'lucide-react';
 
 export const ProfileView = () => {
   const { user, login, updateUser, logout } = useApp();
   const [isEditing, setIsEditing] = useState<boolean>(false);
 
-  // Estados do formulario de edicao
   const [name, setName] = useState(user?.name || '');
   const [email, setEmail] = useState(user?.email || '');
   const [bio, setBio] = useState(user?.bio || '');
@@ -50,24 +49,9 @@ export const ProfileView = () => {
     setIsEditing(false);
   };
 
-  const handleExportDataJSON = () => {
-    const payload = {
-      user,
-      schema_version: '2.0',
-      exported_at: new Date().toISOString(),
-    };
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `anamnese_profile_${user.name.toLowerCase().replace(/\s+/g, '_')}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="max-w-xl mx-auto space-y-5">
-      {/* Cabecalho do Perfil */}
+      {/* Cabecalho */}
       <div className="p-6 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <img
@@ -132,10 +116,10 @@ export const ProfileView = () => {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="space-y-1">
-              <label className="text-[11px] text-[var(--text-muted)]">Area de Foco / Pesquisa</label>
+              <label className="text-[11px] text-[var(--text-muted)]">Area de Foco</label>
               <input
                 type="text"
-                placeholder="Ex: Sistemas Distribuidos & IA"
+                placeholder="Ex: Sistemas Distribuidos"
                 value={focusArea}
                 onChange={(e) => setFocusArea(e.target.value)}
                 className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)]"
@@ -155,22 +139,12 @@ export const ProfileView = () => {
           </div>
 
           <div className="space-y-1">
-            <label className="text-[11px] text-[var(--text-muted)]">Biografia / Descricao Curta</label>
+            <label className="text-[11px] text-[var(--text-muted)]">Biografia / Apresentacao</label>
             <textarea
               rows={2}
               value={bio}
               onChange={(e) => setBio(e.target.value)}
               className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)] resize-none"
-            />
-          </div>
-
-          <div className="space-y-1">
-            <label className="text-[11px] text-[var(--text-muted)]">URL do Avatar / Imagem de Perfil</label>
-            <input
-              type="text"
-              value={avatar}
-              onChange={(e) => setAvatar(e.target.value)}
-              className="w-full bg-[var(--bg-main)] border border-[var(--border-subtle)] rounded-lg p-2.5 text-xs text-[var(--text-main)] outline-none focus:border-[var(--border-focus)]"
             />
           </div>
 
@@ -184,7 +158,7 @@ export const ProfileView = () => {
         </div>
       )}
 
-      {/* Biografia e Detalhes */}
+      {/* Biografia */}
       {user.bio && !isEditing && (
         <div className="p-5 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl text-xs text-[var(--text-muted)] leading-relaxed">
           <span className="text-[10px] text-[var(--text-dim)] uppercase font-semibold block mb-1">Sobre:</span>
@@ -198,7 +172,7 @@ export const ProfileView = () => {
         </div>
       )}
 
-      {/* Metricas */}
+      {/* Metricas de Resolucoes */}
       <div className="grid grid-cols-2 gap-3 text-center">
         <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-4 rounded-xl">
           <span className="text-xs text-[var(--text-dim)] block">Total de Experiencia</span>
@@ -208,22 +182,6 @@ export const ProfileView = () => {
           <span className="text-xs text-[var(--text-dim)] block">Questoes Resolvidas</span>
           <div className="text-xl font-bold text-[var(--accent)] mt-1">{(user.xp / 50).toFixed(0)}</div>
         </div>
-      </div>
-
-      {/* Preparacao para Banco de Dados */}
-      <div className="p-4 bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2 text-[var(--text-muted)]">
-          <Database className="w-4 h-4 text-[var(--accent)]" />
-          <span>Esquema de Dados: Pronto para Sincronizacao PostgreSQL</span>
-        </div>
-        <button
-          onClick={handleExportDataJSON}
-          className="flex items-center gap-1 text-[var(--text-main)] border border-[var(--border-subtle)] px-2.5 py-1.5 rounded-lg hover:bg-[var(--bg-elevated)] transition-colors"
-          title="Exportar dados do usuario em formato JSON"
-        >
-          <Download className="w-3.5 h-3.5" />
-          <span>Exportar JSON</span>
-        </button>
       </div>
 
       <button

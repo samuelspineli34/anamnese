@@ -47,7 +47,7 @@ export const translations: Record<Language, Translations> = {
     tagline: 'O resgate e o aprofundamento dos fundamentos da computacao.',
     modules: 'Trilhas de Estudo',
     infinite: 'Pratica Continua',
-    news: 'Leituras & IA',
+    news: 'Leitura',
     ranking: 'Comunidade',
     profile: 'Meu Perfil',
     streak: 'Dias Seguidos',
@@ -77,12 +77,12 @@ export const translations: Record<Language, Translations> = {
       livesLabel: 'Tentativas'
     },
     newsView: {
-      header: 'Biblioteca de Leituras e Artigos',
+      header: 'Biblioteca de Leitura e Artigos',
       updatedLabel: 'Atualizado',
-      readMore: 'Ler no Aplicativo'
+      readMore: 'Ler Artigo'
     },
     rankingView: {
-      header: 'Painel de Conquistas',
+      header: 'Painel da Comunidade',
       position: 'Posicao',
       xpUnit: 'XP'
     },
@@ -100,7 +100,7 @@ export const translations: Record<Language, Translations> = {
     tagline: 'Recalling and understanding the core fundamentals of computing.',
     modules: 'Study Tracks',
     infinite: 'Continuous Practice',
-    news: 'Readings & AI',
+    news: 'Reading',
     ranking: 'Community',
     profile: 'My Profile',
     streak: 'Streak Days',
@@ -130,12 +130,12 @@ export const translations: Record<Language, Translations> = {
       livesLabel: 'Attempts'
     },
     newsView: {
-      header: 'Library of Readings and Articles',
+      header: 'Reading Library & Articles',
       updatedLabel: 'Updated',
-      readMore: 'Read in App'
+      readMore: 'Read Article'
     },
     rankingView: {
-      header: 'Achievement Board',
+      header: 'Community Board',
       position: 'Rank',
       xpUnit: 'XP'
     },
@@ -153,7 +153,7 @@ export const translations: Record<Language, Translations> = {
     tagline: 'Recordando y comprendiendo los fundamentos esenciales de la computacion.',
     modules: 'Rutas de Estudio',
     infinite: 'Practica Continua',
-    news: 'Lecturas e IA',
+    news: 'Lectura',
     ranking: 'Comunidad',
     profile: 'Mi Perfil',
     streak: 'Dias Seguidos',
@@ -183,12 +183,12 @@ export const translations: Record<Language, Translations> = {
       livesLabel: 'Intentos'
     },
     newsView: {
-      header: 'Biblioteca de Lecturas y Articulos',
+      header: 'Biblioteca de Lectura y Articulos',
       updatedLabel: 'Actualizado',
-      readMore: 'Leer en la Aplicacion'
+      readMore: 'Leer Articulo'
     },
     rankingView: {
-      header: 'Tabla de Logros',
+      header: 'Tabla de la Comunidad',
       position: 'Posicion',
       xpUnit: 'XP'
     },

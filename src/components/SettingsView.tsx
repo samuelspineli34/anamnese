@@ -24,8 +24,8 @@ export const SettingsView: React.FC = () => {
   const [metrics, setMetrics] = useState<StorageMetrics>(StorageService.getMetrics());
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [isSynthesizing, setIsSynthesizing] = useState<boolean>(false);
+  const [generationFeedback, setGenerationFeedback] = useState<string | null>(null);
 
-  // Estados de Verificacao de Atualizacao
   const [isCheckingUpdate, setIsCheckingUpdate] = useState<boolean>(false);
   const [updateFeedback, setUpdateFeedback] = useState<string | null>(null);
   const [foundRelease, setFoundRelease] = useState<ReleaseInfo | null>(null);
@@ -41,9 +41,15 @@ export const SettingsView: React.FC = () => {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
+    // Se inscreve para atualizacoes de questoes
+    const unsubscribe = questionEngine.subscribe(() => {
+      refreshMetrics();
+    });
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      unsubscribe();
     };
   }, []);
 
@@ -63,9 +69,12 @@ export const SettingsView: React.FC = () => {
 
   const handleGenerateQuestionsWithAI = async () => {
     setIsSynthesizing(true);
-    await questionEngine.runAutonomousHarvesting();
+    setGenerationFeedback(null);
+
+    const added = await questionEngine.generateImmediateHarvest();
     refreshMetrics();
     setIsSynthesizing(false);
+    setGenerationFeedback(`Sucesso: ${added} novas questoes ineditas foram adicionadas ao banco.`);
   };
 
   return (
@@ -81,11 +90,11 @@ export const SettingsView: React.FC = () => {
           <span>Configuracoes e Preferencias</span>
         </h2>
         <p className="text-xs text-[var(--text-muted)] mt-0.5">
-          Gerenciamento de memoria local, atualizacoes do sistema e aparencia visual.
+          Gerenciamento de memoria local, atualizacoes do sistema e geracao de dados.
         </p>
       </div>
 
-      {/* Secao de Atualizacoes do Aplicativo */}
+      {/* Atualizacoes */}
       <section className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
           <div className="flex items-center gap-2">
@@ -95,7 +104,7 @@ export const SettingsView: React.FC = () => {
             </h3>
           </div>
           <span className="text-xs text-[var(--text-muted)]">
-            Versao Instalada: <strong className="text-[var(--text-main)]">v{getLocalAppVersion()}</strong>
+            Versao: <strong className="text-[var(--text-main)]">v{getLocalAppVersion()}</strong>
           </span>
         </div>
 
@@ -177,7 +186,7 @@ export const SettingsView: React.FC = () => {
         </div>
       </section>
 
-      {/* Armazenamento e Geracao Dinamica com IA */}
+      {/* Banco de Dados e Geracao com IA */}
       <section className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
         <div className="flex items-center justify-between border-b border-[var(--border-subtle)] pb-3">
           <div className="flex items-center gap-2">
@@ -218,7 +227,12 @@ export const SettingsView: React.FC = () => {
           </div>
         </div>
 
-        {/* Botoes de Acao */}
+        {generationFeedback && (
+          <div className="p-3 bg-[var(--accent-soft)] border border-[var(--accent)]/30 rounded-xl text-xs text-[var(--accent)] font-medium">
+            {generationFeedback}
+          </div>
+        )}
+
         <div className="pt-2 flex flex-wrap gap-2.5">
           <button
             onClick={handleGenerateQuestionsWithAI}
@@ -226,7 +240,7 @@ export const SettingsView: React.FC = () => {
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[var(--accent)] text-[var(--bg-main)] font-medium text-xs hover:opacity-90 transition-opacity disabled:opacity-50"
           >
             <Sparkles className={`w-3.5 h-3.5 ${isSynthesizing ? 'animate-spin' : ''}`} />
-            <span>{isSynthesizing ? 'Sintetizando com IA...' : 'Buscar e Gerar Questoes com IA'}</span>
+            <span>{isSynthesizing ? 'Sintetizando Questoes...' : 'Buscar e Gerar Questoes Agora'}</span>
           </button>
 
           <button
@@ -247,7 +261,7 @@ export const SettingsView: React.FC = () => {
         </div>
       </section>
 
-      {/* Diagnostico de Rede e Idioma */}
+      {/* Conexao e Idioma */}
       <section className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-2xl p-5 space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="space-y-2">

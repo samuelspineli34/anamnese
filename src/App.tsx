@@ -44,7 +44,7 @@ function MainApp() {
   const { user } = useApp();
 
   useEffect(() => {
-    // 1. Busca automatica de atualizacao ao abrir o aplicativo (Mobile e Desktop)
+    // 1. Verificacao de atualizacao ao iniciar
     checkLatestRelease().then((res) => {
       if (res.hasUpdate && res.release) {
         setAvailableRelease(res.release);
@@ -52,12 +52,12 @@ function MainApp() {
       }
     });
 
-    // 2. Sincronizacao periodica do contador de questoes
-    const timer = setInterval(() => {
+    // 2. Inscricao direta: Qualquer nova questao atualiza a tela no mesmo segundo
+    const unsubscribe = questionEngine.subscribe(() => {
       setCounts(questionEngine.getCountsByCategory());
-    }, 3000);
+    });
 
-    return () => clearInterval(timer);
+    return () => unsubscribe();
   }, []);
 
   const handleOpenModule = (catId: Category) => {
@@ -158,7 +158,7 @@ function MainApp() {
             }`}
           >
             <BookOpen className="w-4 h-4 text-[var(--accent)]" />
-            <span>{t.news}</span>
+            <span>Leitura</span>
           </button>
           <button
             onClick={() => setActiveTab('rank')}
@@ -196,7 +196,7 @@ function MainApp() {
         </nav>
       </aside>
 
-      {/* Conteudo Central */}
+      {/* Conteudo Principal */}
       <div className="flex-1 flex flex-col min-h-screen">
         <Header
           activeTab={activeTab}
@@ -217,7 +217,7 @@ function MainApp() {
                 </p>
               </div>
 
-              {/* Grade de 12 Trilhas Curriculares */}
+              {/* Grade Curricular */}
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
                 {tracks.map((track) => {
                   const Icon = track.icon;
