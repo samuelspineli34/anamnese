@@ -1,4 +1,16 @@
-export type Category = 'algoritmos' | 'so' | 'redes' | 'ia' | 'banco_dados' | 'compiladores';
+export type Category =
+  | 'algoritmos'
+  | 'so'
+  | 'redes'
+  | 'banco_dados'
+  | 'compiladores'
+  | 'ia'
+  | 'arquitetura'
+  | 'engenharia_software'
+  | 'seguranca'
+  | 'linguagens'
+  | 'computacao_grafica'
+  | 'trivia';
 
 export interface Question {
   id: string;
@@ -17,16 +29,6 @@ export interface User {
   level: number;
   streak: number;
   avatar: string;
-}
-
-export interface NewsItem {
-  id: string;
-  title: string;
-  summary: string;
-  category: 'IA' | 'Computação' | 'Open Source' | 'Hardware';
-  date: string;
-  url: string;
-  readTime: string;
 }
 
 export interface RankingUser {

@@ -3,7 +3,7 @@ import { Question, Category } from '../types';
 import { questionEngine } from '../services/questionEngine';
 import { useApp } from '../context/AppContext';
 import { useI18n } from '../context/I18nContext';
-import { ShieldAlert, RotateCcw, ArrowRight, CheckCircle2, XCircle, Info, Filter } from 'lucide-react';
+import { RotateCcw, ArrowRight, CheckCircle2, XCircle, HelpCircle, Filter } from 'lucide-react';
 
 interface InfiniteQuizProps {
   selectedCategory?: Category | null;
@@ -80,91 +80,96 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
 
   if (!q) {
     return (
-      <div className="p-8 text-center text-zinc-500 font-mono text-xs">
-        Carregando base de dados avaliativa...
+      <div className="p-8 text-center text-[var(--text-muted)] text-sm">
+        Carregando as questoes de estudo...
       </div>
     );
   }
 
   if (gameOver) {
     return (
-      <div className="flex flex-col items-center justify-center p-8 text-center space-y-5 font-mono">
-        <div className="p-3 bg-red-950/30 border border-red-900/50 rounded-xl">
-          <ShieldAlert className="w-8 h-8 text-red-500" />
+      <div className="flex flex-col items-center justify-center p-8 text-center space-y-4 max-w-sm mx-auto">
+        <h2 className="text-lg font-semibold text-[var(--text-main)]">{t.quiz.gameOverTitle}</h2>
+        <p className="text-xs text-[var(--text-muted)] leading-relaxed">{t.quiz.gameOverDesc}</p>
+
+        <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] rounded-xl p-4 w-full">
+          <span className="text-xs text-[var(--text-dim)] block">{t.quiz.finalScore}</span>
+          <div className="text-2xl font-bold text-[var(--text-main)] mt-1">{score} pontos</div>
         </div>
-        <div>
-          <h2 className="text-xl font-bold text-zinc-100">{t.quiz.gameOverTitle}</h2>
-          <p className="text-xs text-zinc-500 mt-1">{t.quiz.gameOverDesc}</p>
-        </div>
-        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 w-full max-w-xs">
-          <span className="text-[10px] uppercase text-zinc-500 font-semibold">{t.quiz.finalScore}</span>
-          <div className="text-3xl font-bold text-zinc-100 mt-1">{score}</div>
-        </div>
+
         <button
           onClick={restart}
-          className="flex items-center gap-2 bg-zinc-100 text-zinc-950 text-xs font-bold px-5 py-2.5 rounded-lg hover:bg-zinc-200 transition-colors"
+          className="flex items-center gap-2 bg-[var(--text-main)] text-[var(--bg-main)] text-xs font-medium px-4 py-2.5 rounded-lg hover:opacity-90 transition-opacity"
         >
-          <RotateCcw className="w-3.5 h-3.5" /> {t.quiz.restartBtn}
+          <RotateCcw className="w-3.5 h-3.5" />
+          <span>{t.quiz.restartBtn}</span>
         </button>
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 max-w-xl mx-auto font-mono">
-      <div className="flex items-center justify-between bg-zinc-900/60 border border-zinc-800 px-4 py-2.5 rounded-xl text-xs">
-        <div className="flex items-center gap-2">
+    <div className="space-y-4 max-w-xl mx-auto">
+      {/* Barra de Progresso e Tentativas */}
+      <div className="flex items-center justify-between bg-[var(--bg-card)] border border-[var(--border-subtle)] px-4 py-2.5 rounded-xl text-xs">
+        <div className="flex items-center gap-3">
           {selectedCategory && (
-            <div className="flex items-center gap-1 bg-zinc-800 px-2 py-0.5 rounded text-[10px] text-zinc-300">
-              <Filter className="w-3 h-3 text-emerald-500" />
-              <span>{selectedCategory.toUpperCase()}</span>
+            <div className="flex items-center gap-1 text-[var(--accent)] bg-[var(--accent-soft)] px-2 py-0.5 rounded text-[11px] font-medium">
+              <Filter className="w-3 h-3" />
+              <span>{t.categories[selectedCategory] || selectedCategory}</span>
               {onClearFilter && (
-                <button onClick={onClearFilter} className="ml-1 text-zinc-500 hover:text-zinc-200">
+                <button onClick={onClearFilter} className="ml-1 text-[var(--text-muted)] hover:text-[var(--text-main)]">
                   x
                 </button>
               )}
             </div>
           )}
-          <span className="text-zinc-500 text-[11px]">{t.quiz.livesLabel}:</span>
-          <div className="flex items-center gap-1">
-            {[...Array(3)].map((_, i) => (
-              <span
-                key={i}
-                className={`inline-block w-2 h-2 rounded-full ${
-                  i < lives ? 'bg-emerald-500 ring-2 ring-emerald-500/20' : 'bg-zinc-700'
-                }`}
-              />
-            ))}
+
+          <div className="flex items-center gap-1.5">
+            <span className="text-[var(--text-dim)]">{t.quiz.livesLabel}:</span>
+            <div className="flex items-center gap-1">
+              {[...Array(3)].map((_, i) => (
+                <span
+                  key={i}
+                  className={`w-2 h-2 rounded-full transition-colors ${
+                    i < lives ? 'bg-[var(--accent)]' : 'bg-[var(--border-subtle)]'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-3 text-zinc-400">
-          <span>MULT: {multiplier}x</span>
-          <span className="text-zinc-200 font-bold">{score} PTS</span>
+
+        <div className="text-xs text-[var(--text-muted)]">
+          <span className="font-semibold text-[var(--text-main)]">{score}</span> pontos
         </div>
       </div>
 
-      <div className="bg-zinc-900/40 border border-zinc-800 p-5 rounded-xl space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-[10px] tracking-wider text-emerald-500 bg-emerald-950/40 border border-emerald-900/60 px-2 py-0.5 rounded uppercase">
-            {q.category}
+      {/* Card da Questao */}
+      <div className="bg-[var(--bg-card)] border border-[var(--border-subtle)] p-6 rounded-2xl space-y-5">
+        <div className="flex items-center justify-between text-xs text-[var(--text-dim)]">
+          <span className="text-[var(--accent)] font-medium">
+            {t.categories[q.category] || q.category}
           </span>
-          <span className="text-[10px] text-zinc-500">QUESTAO {(currentIdx % questionList.length) + 1} DE {questionList.length}</span>
+          <span>Questao {(currentIdx % questionList.length) + 1} de {questionList.length}</span>
         </div>
 
-        <h3 className="text-sm font-semibold text-zinc-100 leading-snug">{q.question}</h3>
+        <h3 className="text-base font-medium text-[var(--text-main)] leading-relaxed">
+          {q.question}
+        </h3>
 
-        <div className="space-y-2">
+        <div className="space-y-2.5">
           {q.options.map((opt, i) => {
-            let style = 'bg-zinc-900/80 border-zinc-800 text-zinc-300 hover:border-zinc-700';
+            let style = 'bg-[var(--bg-elevated)] border-[var(--border-subtle)] text-[var(--text-main)] hover:border-[var(--border-focus)]';
             let IconIndicator = null;
 
             if (isAnswered) {
               if (i === q.correctIndex) {
-                style = 'bg-emerald-950/30 border-emerald-600/60 text-emerald-300';
-                IconIndicator = <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />;
+                style = 'bg-[var(--accent-soft)] border-[var(--accent)] text-[var(--text-main)] font-medium';
+                IconIndicator = <CheckCircle2 className="w-4 h-4 text-[var(--accent)] shrink-0" />;
               } else if (i === selectedOpt) {
-                style = 'bg-red-950/30 border-red-600/60 text-red-300';
-                IconIndicator = <XCircle className="w-4 h-4 text-red-500 shrink-0" />;
+                style = 'bg-red-950/20 border-red-800 text-red-200';
+                IconIndicator = <XCircle className="w-4 h-4 text-red-400 shrink-0" />;
               }
             }
 
@@ -173,7 +178,7 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
                 key={i}
                 disabled={isAnswered}
                 onClick={() => handleSelect(i)}
-                className={`w-full text-left p-3 rounded-lg border text-xs transition-all flex items-center justify-between gap-3 ${style}`}
+                className={`w-full text-left p-3.5 rounded-xl border text-xs md:text-sm transition-all flex items-center justify-between gap-3 ${style}`}
               >
                 <span>{opt}</span>
                 {IconIndicator}
@@ -182,21 +187,20 @@ export const InfiniteQuiz: React.FC<InfiniteQuizProps> = ({ selectedCategory, on
           })}
         </div>
 
+        {/* Explicacao Conceitual Didatica */}
         {isAnswered && (
-          <div className="mt-4 pt-3 border-t border-zinc-800 space-y-3">
-            <div className="flex items-start gap-2 bg-zinc-900/80 border border-zinc-800 p-3 rounded-lg">
-              <Info className="w-4 h-4 text-zinc-400 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-[10px] font-bold text-zinc-400 uppercase block">
-                  {t.quiz.explanationLabel}
-                </span>
-                <p className="text-xs text-zinc-300 mt-0.5 leading-relaxed">{q.explanation}</p>
-              </div>
+          <div className="mt-5 pt-4 border-t border-[var(--border-subtle)] space-y-4">
+            <div className="p-4 rounded-xl bg-[var(--bg-main)] border border-[var(--border-subtle)] text-xs leading-relaxed space-y-1">
+              <span className="font-semibold text-[var(--accent)] flex items-center gap-1.5">
+                <HelpCircle className="w-3.5 h-3.5" />
+                <span>{t.quiz.explanationLabel}</span>
+              </span>
+              <p className="text-[var(--text-muted)] pt-1">{q.explanation}</p>
             </div>
 
             <button
               onClick={handleNext}
-              className="w-full flex items-center justify-center gap-1.5 bg-zinc-100 text-zinc-950 font-bold text-xs py-2.5 rounded-lg hover:bg-zinc-200 transition-colors"
+              className="w-full flex items-center justify-center gap-2 bg-[var(--text-main)] text-[var(--bg-main)] font-medium text-xs py-2.5 rounded-xl hover:opacity-90 transition-opacity"
             >
               <span>{t.quiz.nextBtn}</span>
               <ArrowRight className="w-3.5 h-3.5" />
