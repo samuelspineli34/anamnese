@@ -1,6 +1,13 @@
 const { app, BrowserWindow, ipcMain, shell } = require('electron');
 const path = require('path');
-const { autoUpdater } = require('electron-updater');
+
+let autoUpdater = null;
+try {
+  const updaterModule = require('electron-updater');
+  autoUpdater = updaterModule.autoUpdater;
+} catch (err) {
+  console.warn('Modulo electron-updater indisponivel no runtime:', err.message);
+}
 
 let mainWindow;
 
@@ -29,7 +36,8 @@ function createWindow() {
     mainWindow.loadURL(process.env.VITE_DEV_SERVER_URL || 'http://localhost:5173');
   }
 
-  if (app.isPackaged) {
+  // Consulta de atualizacao com protecao
+  if (app.isPackaged && autoUpdater) {
     autoUpdater.autoDownload = false;
     autoUpdater.checkForUpdates().catch((err) => {
       console.warn('Falha na verificacao nativa de release:', err);
@@ -40,18 +48,36 @@ function createWindow() {
 ipcMain.handle('get-app-version', () => app.getVersion());
 
 ipcMain.on('start-download-update', () => {
-  autoUpdater.downloadUpdate().catch((err) => {
-    console.error('Falha no download da atualizacao:', err);
-  });
+  if (autoUpdater) {
+    autoUpdater.downloadUpdate().catch((err) => {
+      console.error('Falha no download da atualizacao:', err);
+    });
+  }
 });
 
 ipcMain.on('apply-update', () => {
-  autoUpdater.quitAndInstall();
+  if (autoUpdater) {
+    autoUpdater.quitAndInstall();
+  }
 });
 
 ipcMain.on('open-external-url', (_, url) => {
   shell.openExternal(url);
 });
+
+if (autoUpdater) {
+  autoUpdater.on('update-available', (info) => {
+    if (mainWindow) {
+      mainWindow.webContents.send('native-update-available', info);
+    }
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    if (mainWindow) {
+      mainWindow.webContents.send('native-update-downloaded');
+    }
+  });
+}
 
 app.whenReady().then(createWindow);
 
